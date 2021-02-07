@@ -1,4 +1,5 @@
 import json
+import datetime
 import discord
 import koreanbots
 from discord.ext import commands
@@ -18,6 +19,10 @@ class JBotClient(commands.AutoShardedBot):
     def get_setting(key):
         with open("config.json", "r", encoding="UTF-8") as f:
             return json.load(f).get(key)
+
+    @property
+    def kst(self):
+        return datetime.datetime.now(tz=datetime.timezone(datetime.timedelta(hours=9)))
 
     @property
     def is_debug(self):
