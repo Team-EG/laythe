@@ -32,5 +32,8 @@ class JBotClient(commands.AutoShardedBot):
         # DB 모듈 제작 이후 수정 예정
         return commands.when_mentioned_or("제이봇 ", "j!")(bot, message)
 
+    async def init_lava(self):
+        raise NotImplementedError
+
     def run(self):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))
