@@ -1,4 +1,5 @@
 import json
+import asyncio
 import datetime
 import discord
 import koreanbots
@@ -34,6 +35,21 @@ class JBotClient(commands.AutoShardedBot):
 
     async def init_lava(self):
         raise NotImplementedError
+
+    async def confirm(self, author, message, timeout=30):
+        emoji_list = ["⭕", "❌"]
+        [self.loop.create_task(message.add_reaction(x)) for x in emoji_list]
+        try:
+            reaction = (
+                await self.wait_for(
+                    "reaction_add",
+                    timeout=timeout,
+                    check=lambda r, u: r.message.id == message.id and str(r.emoji) in emoji_list and u == author
+                )
+            )[0]
+            return str(reaction.emoji) == emoji_list[0]
+        except asyncio.TimeoutError:
+            return None
 
     def run(self):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))
