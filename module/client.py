@@ -1,5 +1,6 @@
 import json
 import asyncio
+import logging
 import datetime
 import discord
 import koreanbots
@@ -8,13 +9,14 @@ from light_uniquebots import LUBClient
 
 
 class JBotClient(commands.AutoShardedBot):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, logger: logging.Logger, **kwargs):
         super().__init__(command_prefix=self.prefix,
                          help_command=None,
                          intents=discord.Intents.all(),
                          allowed_mentions=discord.AllowedMentions(everyone=False))
+        self.logger = logger
         self.koreanbots = koreanbots.Client(self, self.get_setting("kbot_token"), postCount=not self.is_debug)
-        self.uniquebots = LUBClient(bot=self, token=self.get_setting("ubot_token"))
+        self.uniquebots = LUBClient(bot=self, token=self.get_setting("ubot_token"), run_update=False)
 
     @staticmethod
     def get_setting(key):
@@ -36,7 +38,7 @@ class JBotClient(commands.AutoShardedBot):
     async def init_lava(self):
         raise NotImplementedError
 
-    async def confirm(self, author, message, timeout=30):
+    async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
         emoji_list = ["⭕", "❌"]
         [self.loop.create_task(message.add_reaction(x)) for x in emoji_list]
         try:
@@ -50,6 +52,13 @@ class JBotClient(commands.AutoShardedBot):
             return str(reaction.emoji) == emoji_list[0]
         except asyncio.TimeoutError:
             return None
+
+    async def safe_clear_reaction(self, message: discord.Message):
+        reactions = message.reactions
+        try:
+            await message.clear_reactions()
+        except discord.Forbidden:
+            [await x.remove(self.user) for x in reactions]
 
     def run(self):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))

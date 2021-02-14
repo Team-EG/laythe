@@ -7,7 +7,11 @@ class Basic(commands.Cog):
 
     @commands.command(name="ping")
     async def ping(self, ctx):
-        await ctx.send("Pong!")
+        await ctx.reply("Pong!")
+
+    @commands.command(name="raise")
+    async def _raise(self, ctx):
+        await ctx.reply([][2])
 
 
 def setup(bot):
