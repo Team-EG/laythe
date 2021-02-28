@@ -42,40 +42,22 @@ class Core(commands.Cog):
             abort.description = f"액션 `{action}`은(는) Cog 이름을 요구하지 않습니다."
             return await ctx.reply(embed=abort)
 
-        if action == "update" or (action == "reload" and name == "-all"):
-            ask.description = "정말로 Cog 전체를 리로드 할까요?"
+        if action in name_not_req or name == "-all":
+            if action not in name_not_req:
+                action = {"load": "attach", "unload": "detach", "reload": "update"}[action]
+            act = {"detach": ["언로드", self.bot.unload_extension],
+                   "attach": ["로드", self.bot.load_extension],
+                   "update": ["리로드", self.bot.reload_extension]}
+            selected = act[action]
+            ask.description = f"정말로 Cog 전체를 {selected[0]} 할까요?"
             msg = await ctx.reply(embed=ask)
             conf = await self.bot.confirm(ctx.author, msg)
             self.bot.loop.create_task(self.bot.safe_clear_reaction(msg))
             if not conf:
-                abort.description = "Cog 전체 리로드가 취소되었습니다."
+                abort.description = f"Cog 전체 {selected[0]}가 취소되었습니다."
                 return await msg.edit(embed=abort)
-            [self.bot.reload_extension(f"cogs.{x.replace('.py', '')}") for x in os.listdir("cogs") if x.endswith('.py') and not x.startswith("_")]
-            success.description = "Cog 전체 리로드가 완료되었습니다."
-            return await msg.edit(embed=success)
-
-        if action == "attach" or (action == "load" and name == "-all"):
-            ask.description = "정말로 Cog 전체를 로드 할까요?"
-            msg = await ctx.reply(embed=ask)
-            conf = await self.bot.confirm(ctx.author, msg)
-            self.bot.loop.create_task(self.bot.safe_clear_reaction(msg))
-            if not conf:
-                abort.description = "Cog 전체 로드가 취소되었습니다."
-                return await msg.edit(embed=abort)
-            [self.bot.load_extension(f"cogs.{x.replace('.py', '')}") for x in os.listdir("cogs") if x.endswith('.py') and not x.startswith("_")]
-            success.description = "Cog 전체 로드가 완료되었습니다."
-            return await msg.edit(embed=success)
-
-        if action == "detach" or (action == "unload" and name == "-all"):
-            ask.description = "정말로 Cog 전체를 언로드 할까요?"
-            msg = await ctx.reply(embed=ask)
-            conf = await self.bot.confirm(ctx.author, msg)
-            self.bot.loop.create_task(self.bot.safe_clear_reaction(msg))
-            if not conf:
-                abort.description = "Cog 전체 언로드가 취소되었습니다."
-                return await msg.edit(embed=abort)
-            [self.bot.unload_extension(f"cogs.{x.replace('.py', '')}") for x in os.listdir("cogs") if x.endswith('.py') and not x.startswith("_")]
-            success.description = "Cog 전체 언로드가 완료되었습니다."
+            [selected[1](f"cogs.{x.replace('.py', '')}") for x in os.listdir("cogs") if x.endswith('.py') and not x.startswith("_")]
+            success.description = f"Cog 전체 {selected[0]}가 완료되었습니다."
             return await msg.edit(embed=success)
 
         if name == "core":

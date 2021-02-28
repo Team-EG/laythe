@@ -17,7 +17,7 @@ class Error(commands.Cog):
         base = AuthorEmbed(ctx.author, title="이런!", display_footer=True, color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
         if self.bot.is_debug:
             return print(tb, file=sys.stderr)
-        edited_tb = "..." + tb[-1997:] if len(tb) > 2000 else tb
+        edited_tb = ("..." + tb[-1997:]) if len(tb) > 2000 else tb
         if isinstance(error, commands.CommandNotFound):
             return
         if isinstance(error, commands.NotOwner):
