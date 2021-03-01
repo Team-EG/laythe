@@ -7,7 +7,7 @@ class Basic(commands.Cog):
     def __init__(self, bot: JBotClient):
         self.bot = bot
 
-    @commands.command(name="ping", description="봇의 레이턴시를 알려줍니다.", aliases=["핑", "퐁", "pong"])
+    @commands.command(name="ping", description="봇의 레이턴시를 알려줘요.", aliases=["핑", "퐁", "pong"])
     async def ping(self, ctx: commands.Context):
         send_start = time.time()
         msg = await ctx.send("잠시만 기다려주세요... (1)")
@@ -37,15 +37,6 @@ class Basic(commands.Cog):
         embed.add_field(name="메시지 삭제 레이턴시", value=f"{round(delete_latency*1000)}ms")
         """
         await ctx.reply(embed=embed)
-
-    @commands.command(name="raise")
-    async def _raise(self, ctx):
-        await ctx.reply([][2])
-
-    @commands.command(name="pager")
-    async def pager_test(self, ctx):
-        pager = Pager(self.bot, ctx.channel, ctx.author, ["1", "2", "3", "4"], reply=ctx.message)
-        await pager.start_flatten()
 
 
 def setup(bot):
