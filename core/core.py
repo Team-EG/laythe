@@ -1,9 +1,6 @@
 import os
-import discord
 from discord.ext import commands
-from module import JBotClient
-from module import AuthorEmbed
-from module import EmbedColor
+from module import JBotClient, AuthorEmbed, EmbedColor
 
 
 class Core(commands.Cog):
@@ -52,7 +49,7 @@ class Core(commands.Cog):
             ask.description = f"정말로 Cog 전체를 {selected[0]} 할까요?"
             msg = await ctx.reply(embed=ask)
             conf = await self.bot.confirm(ctx.author, msg)
-            self.bot.loop.create_task(self.bot.safe_clear_reaction(msg))
+            self.bot.loop.create_task(self.bot.safe_clear_reactions(msg))
             if not conf:
                 abort.description = f"Cog 전체 {selected[0]}가 취소되었습니다."
                 return await msg.edit(embed=abort)
@@ -68,13 +65,42 @@ class Core(commands.Cog):
                               "잘못된 코어 모듈이 들어가있는 경우 봇에 문제가 생길 수 있습니다."
             msg = await ctx.reply(embed=ask)
             conf = await self.bot.confirm(ctx.author, msg)
-            self.bot.loop.create_task(self.bot.safe_clear_reaction(msg))
+            self.bot.loop.create_task(self.bot.safe_clear_reactions(msg))
             if not conf:
                 abort.description = "코어 모듈 리로드가 취소되었습니다."
                 return await msg.edit(embed=abort)
             self.bot.reload_extension("core.core")
             success.description = "코어 모듈 리로드가 완료되었습니다."
             return await msg.edit(embed=success)
+
+        if name not in [x.replace(".py", "") for x in os.listdir('cogs')]:
+            abort.description = "존재하지 않는 Cog 이름입니다."
+            return await ctx.reply(embed=abort)
+
+        act = {"unload": ["언로드", self.bot.unload_extension],
+               "load": ["로드", self.bot.load_extension],
+               "reload": ["리로드", self.bot.reload_extension]}
+        selected = act[action]
+        ask.description = f"정말로 Cog `{name}`을(를) {selected[0]} 할까요?"
+        msg = await ctx.reply(embed=ask)
+        conf = await self.bot.confirm(ctx.author, msg)
+        self.bot.loop.create_task(self.bot.safe_clear_reactions(msg))
+        if not conf:
+            abort.description = f"Cog `{name}` {selected[0]}가 취소되었습니다."
+            return await msg.edit(embed=abort)
+        selected[1](f"cogs.{name}")
+        success.description = f"Cog `{name}` {selected[0]}가 완료되었습니다."
+        return await msg.edit(embed=success)
+
+    @manage_cog.error
+    async def on_manage_cog_error(self, ctx, ex):
+        embed = AuthorEmbed(ctx.author,
+                            title="이런! Cog 작업중 오류가 발생했어요...",
+                            description=f"```py\n{ex}\n```",
+                            timestamp=ctx.message.created_at,
+                            color=EmbedColor.NEGATIVE,
+                            display_footer=True)
+        await ctx.reply(embed=embed)
 
     @commands.Cog.listener()
     async def on_ready(self):

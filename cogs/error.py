@@ -2,9 +2,7 @@ import sys
 import time
 import traceback
 from discord.ext import commands
-from module import JBotClient
-from module import AuthorEmbed
-from module import EmbedColor
+from module import JBotClient, AuthorEmbed, EmbedColor
 
 
 class Error(commands.Cog):

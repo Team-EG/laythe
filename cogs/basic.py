@@ -1,7 +1,6 @@
 import time
 from discord.ext import commands
-from module import AuthorEmbed, EmbedColor
-from module import JBotClient
+from module import JBotClient, AuthorEmbed, EmbedColor, Pager
 
 
 class Basic(commands.Cog):
@@ -42,6 +41,11 @@ class Basic(commands.Cog):
     @commands.command(name="raise")
     async def _raise(self, ctx):
         await ctx.reply([][2])
+
+    @commands.command(name="pager")
+    async def pager_test(self, ctx):
+        pager = Pager(self.bot, ctx.channel, ctx.author, ["1", "2", "3", "4"], reply=ctx.message)
+        await pager.start_flatten()
 
 
 def setup(bot):

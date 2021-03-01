@@ -1,9 +1,11 @@
 import json
+import typing
 import asyncio
 import logging
 import datetime
 import discord
 import koreanbots
+from contextlib import suppress
 from discord.ext import commands
 from light_uniquebots import LUBClient
 
@@ -53,12 +55,17 @@ class JBotClient(commands.AutoShardedBot):
         except asyncio.TimeoutError:
             return None
 
-    async def safe_clear_reaction(self, message: discord.Message):
+    async def safe_clear_reactions(self, message: discord.Message):
         reactions = message.reactions
         try:
             await message.clear_reactions()
         except discord.Forbidden:
             [await x.remove(self.user) for x in reactions]
+
+    @staticmethod
+    async def safe_clear_reaction(reaction: discord.Reaction, user: typing.Union[discord.User, discord.Member]):
+        with suppress(discord.Forbidden):
+            await reaction.remove(user)
 
     @staticmethod
     def parse_second(time: int):
