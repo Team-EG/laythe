@@ -47,13 +47,19 @@ class Pager:
         self.current = self.current - 1 if self.current - 1 >= 0 else self.__max_page
         return self.pages[self.current]
 
+    def start(self, as_generator: bool = False):
+        if as_generator:
+            return self.__start
+        else:
+            return self.start_flatten
+
     async def start_flatten(self):
         return_list = []
-        async for x in self.start():
+        async for x in self.__start():
             return_list.append(x)
         return return_list
 
-    async def start(self):
+    async def __start(self):
         func = self.channel.send if not self.reply else self.reply.reply
         self.message = await func(self.pages[0] if not self.is_embed else None,
                                   embed=self.pages[0] if self.is_embed else None)
