@@ -19,13 +19,16 @@ class Dev(commands.Cog):
         if ctx.invoked_subcommand:
             return
 
+        kvote, uvote = await self.bot.botlist.get_vote_count()
         embed = AuthorEmbed(ctx.author,
                             title="제이봇 개발자 패널",
                             description=f"<:python:815496209682006036> Python `{platform.python_version()}` | "
                                         f"<:dpy2:815496751452651540> discord.py `{discord.__version__}` | "
                                         f"<:slash:815496477224468521> discord-py-slash-command `{discord_slash.__version__}`\n"
                                         f"플랫폼: `{platform.platform()}`\n"
-                                        f"길드 {len(self.bot.guilds)}개 | 유저 {len(self.bot.users)}명",
+                                        f"길드 {len(self.bot.guilds)}개 | 유저 {len(self.bot.users)}명\n"
+                                        f"[KOREANBOTS](https://koreanbots.dev/bots/622710354836717580) {kvote} ❤ | "
+                                        f"[UNIQUEBOTS](https://uniquebots.kr/bots/info/622710354836717580) {uvote} ❤",
                             timestamp=ctx.message.created_at,
                             color=EmbedColor.DEFAULT,
                             display_footer=True)
@@ -74,9 +77,9 @@ class Dev(commands.Cog):
                             timestamp=ctx.message.created_at,
                             display_footer=True)
         embed.add_field(name="입력", value=f"```py\n{original_code}\n```", inline=False)
-        await msg.delete()
         try:
             if isinstance(func, types.AsyncGeneratorType):
+                await msg.delete()
                 embed.add_field(name="결과", value="제너레이터 타입은 따로 출력됩니다.", inline=False)
                 msg = await ctx.reply(embed=embed)
                 count = 0
@@ -88,10 +91,12 @@ class Dev(commands.Cog):
                     await msg.reply(embed=yield_embed)
             else:
                 res = await func
+                await msg.delete()
                 embed.add_field(name="결과", value=f"""```py\n{f'"{res}"' if isinstance(res, str) else res}\n```""", inline=False)
                 embed.add_field(name="타입", value=f"```py\n{type(res)}\n```", inline=False)
                 await ctx.reply(embed=embed)
         except Exception as ex:
+            await msg.delete()
             tb = ''.join(traceback.format_exception(type(ex), ex, ex.__traceback__))
             tb = ("..." + tb[-1997:]) if len(tb) > 2000 else tb
             embed.color = EmbedColor.NEGATIVE

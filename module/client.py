@@ -3,11 +3,11 @@ import typing
 import asyncio
 import logging
 import datetime
+import aiohttp
 import discord
-import koreanbots
 from contextlib import suppress
 from discord.ext import commands
-from light_uniquebots import LUBClient
+from extlib import BotList, SpellChecker
 
 
 class JBotClient(commands.AutoShardedBot):
@@ -17,8 +17,9 @@ class JBotClient(commands.AutoShardedBot):
                          intents=discord.Intents.all(),
                          allowed_mentions=discord.AllowedMentions(everyone=False))
         self.logger = logger
-        self.koreanbots = koreanbots.Client(self, self.get_setting("kbot_token"), postCount=not self.is_debug)
-        self.uniquebots = LUBClient(bot=self, token=self.get_setting("ubot_token"), run_update=False)
+        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.botlist = BotList(self, self.get_setting("kbot_token"), self.get_setting("ubot_token"), run_update=not self.is_debug)
+        self.spell = SpellChecker(self.session)
 
     @staticmethod
     def get_setting(key):
@@ -97,3 +98,7 @@ class JBotClient(commands.AutoShardedBot):
 
     def run(self):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))
+
+    async def close(self):
+        await self.session.close()
+        await super().close()
