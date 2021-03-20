@@ -1,0 +1,10 @@
+{
+    "token": "TOKEN",
+    "dev_token": "DEV_TOKEN",
+    "kbot_token": "KOREANBOTS_TOKEN",
+    "ubot_token": "UNIQUEBOTS_TOKEN",
+    "debug": false,
+    "lavahost": "LAVALINK.URL",
+    "lavaport": 0,
+    "lavapw": "LAVALINK_PASSWORD"
+}
