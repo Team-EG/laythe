@@ -61,8 +61,7 @@ class Pager:
 
     async def __start(self):
         func = self.channel.send if not self.reply else self.reply.reply
-        self.message = await func(self.pages[0] if not self.is_embed else None,
-                                  embed=self.pages[0] if self.is_embed else None)
+        self.message = await func(content=self.pages[0] if not self.is_embed else None, embed=self.pages[0] if self.is_embed else None)
         [self.client.loop.create_task(self.message.add_reaction(x)) for x in self.full_emoji_list]
         while not self.client.is_closed():
             try:

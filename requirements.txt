@@ -1,0 +1,7 @@
+discord.py[voice]
+discord-py-slash-command
+lavalink
+psutil
+aiohttp
+aiosqlite
+requests
