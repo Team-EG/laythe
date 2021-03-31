@@ -12,20 +12,23 @@ class Error(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
         tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
-        base = AuthorEmbed(ctx.author, title="이런!", display_footer=True, color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
+        base = AuthorEmbed(ctx.author, title="이런! ", display_footer=True, color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
         if self.bot.is_debug:
             return print(tb, file=sys.stderr)
         edited_tb = ("..." + tb[-1997:]) if len(tb) > 2000 else tb
         if isinstance(error, commands.CommandNotFound):
             return
+        await ctx.message.add_reaction("⏰") if isinstance(error, commands.CommandOnCooldown) \
+            else await ctx.message.add_reaction("⚠")
+        report_required = False
         if isinstance(error, commands.NotOwner):
-            base.title += " 이 명령어는 Team EG 개발자만 사용할 수 있는 명령어에요."
-            await ctx.reply(embed=base)
+            base.title += "이 명령어는 Team EG 개발자만 사용할 수 있는 명령어에요."
         else:
-            base.title += " 예기치 못한 오류가 발생했어요..."
+            base.title += "예기치 못한 오류가 발생했어요..."
             base.description = f"디버깅용 메시지: ```py\n{edited_tb}\n```"
             base.add_field(name="잠시만요!", value="이 오류 정보를 개발자에게 전송할까요? 오류 전송 시 오류 내용과 명령어를 실행한 메시지 내용이 전달돼요.")
-            msg = await ctx.reply(embed=base)
+        msg = await ctx.reply(embed=base)
+        if report_required:
             conf = await self.bot.confirm(ctx.author, msg)
             if conf:
                 debug_format = f"===JBOT-DEBUG===\n" \

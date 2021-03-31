@@ -7,7 +7,7 @@ import psutil
 import discord
 import discord_slash
 from discord.ext import commands
-from module import JBotClient, AuthorEmbed, EmbedColor
+from module import JBotClient, AuthorEmbed, EmbedColor, utils
 
 
 class Dev(commands.Cog):
@@ -15,6 +15,7 @@ class Dev(commands.Cog):
         self.bot = bot
 
     @commands.group(name="dev")
+    @commands.is_owner()
     async def dev(self, ctx: commands.Context):
         if ctx.invoked_subcommand:
             return
@@ -26,9 +27,9 @@ class Dev(commands.Cog):
                                         f"<:dpy2:815496751452651540> discord.py `{discord.__version__}` | "
                                         f"<:slash:815496477224468521> discord-py-slash-command `{discord_slash.__version__}`\n"
                                         f"플랫폼: `{platform.platform()}`\n"
-                                        f"길드 {len(self.bot.guilds)}개 | 유저 {len(self.bot.users)}명\n"
-                                        f"[KOREANBOTS](https://koreanbots.dev/bots/622710354836717580) {kvote} ❤ | "
-                                        f"[UNIQUEBOTS](https://uniquebots.kr/bots/info/622710354836717580) {uvote} ❤",
+                                        f"길드 `{len(self.bot.guilds)}`개 | 유저 `{len(self.bot.users)}`명\n"
+                                        f"[KOREANBOTS](https://koreanbots.dev/bots/622710354836717580) `{kvote}` ❤ | "
+                                        f"[UNIQUEBOTS](https://uniquebots.kr/bots/info/622710354836717580) `{uvote}` ❤",
                             timestamp=ctx.message.created_at,
                             color=EmbedColor.DEFAULT,
                             display_footer=True)
@@ -37,7 +38,7 @@ class Dev(commands.Cog):
                         value=f"{', '.join([f'__`{x[0]}`__' if x[0] in privileged else f'`{x[0]}`' for x in self.bot.intents if x[1]])}",
                         inline=False)
         embed.add_field(name="샤드",
-                        value=f"총 {len(self.bot.shards)}개 (이 길드 샤드 ID: {ctx.guild.shard_id})"
+                        value=f"총 `{len(self.bot.shards)}`개 (이 길드 샤드 ID: `{ctx.guild.shard_id}`)"
                         if issubclass(type(self.bot), discord.AutoShardedClient) or self.bot.shard_count else
                         "⚠ 제이봇이 현재 샤딩되지 않았습니다. 잘못된 클래스가 상속되었을 수 있습니다.",
                         inline=False)
@@ -46,17 +47,17 @@ class Dev(commands.Cog):
         uptime_sys = (datetime.datetime.now() - datetime.datetime.fromtimestamp(psutil.boot_time())).total_seconds()
         uptime_bot = (datetime.datetime.now() - datetime.datetime.fromtimestamp(process.create_time())).total_seconds()
         embed.add_field(name="CPU 사용량",
-                        value=f"총: {psutil.cpu_percent()}%\n"
-                              f"쓰레드 당: {'% | '.join([str(x) for x in psutil.cpu_percent(percpu=True)])}%\n"
-                              f"봇 프로세스: {process.cpu_percent()}%",
+                        value=f"총: `{psutil.cpu_percent()}`%\n"
+                              f"쓰레드 당: `{'`% | `'.join([str(x) for x in psutil.cpu_percent(percpu=True)])}`%\n"
+                              f"봇 프로세스: `{process.cpu_percent()}`%",
                         inline=False)
         embed.add_field(name="RAM 사용량",
-                        value=f"총: {memory.percent}% ({self.bot.parse_bytesize(memory.used)}/{self.bot.parse_bytesize(memory.total)})\n"
-                              f"봇 프로세스: (물리적: {round(process.memory_percent('rss')*100, 2)}% | "
-                              f"가상: {round(process.memory_percent('vms')*100, 2)}%)",
+                        value=f"총: `{memory.percent}`% ({utils.parse_bytesize(memory.used)}/{utils.parse_bytesize(memory.total)})\n"
+                              f"봇 프로세스: (물리적: `{round(process.memory_percent('rss'), 2)}`% | "
+                              f"가상: `{round(process.memory_percent('vms'), 2)}`%)",
                         inline=False)
-        embed.add_field(name="업타임", value=f"서버: {self.bot.parse_second(round(uptime_sys))} | 봇: {self.bot.parse_second(round(uptime_bot))}", inline=False)
-        embed.add_field(name="누적된 오류 로그 개수", value=f"{len(os.listdir('traceback'))}개", inline=False)
+        embed.add_field(name="업타임", value=f"서버: {utils.parse_second(round(uptime_sys))} | 봇: {utils.parse_second(round(uptime_bot))}", inline=False)
+        embed.add_field(name="누적된 오류 로그 개수", value=f"`{len(os.listdir('traceback'))}`개", inline=False)
         await ctx.reply(embed=embed)
 
     @dev.command(name="eval")

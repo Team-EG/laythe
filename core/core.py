@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 from discord.ext import commands
 from module import JBotClient, AuthorEmbed, EmbedColor
 
@@ -94,6 +96,7 @@ class Core(commands.Cog):
 
     @manage_cog.error
     async def on_manage_cog_error(self, ctx, ex):
+        print(''.join(traceback.format_exception(type(ex), ex, ex.__traceback__)), file=sys.stderr)
         embed = AuthorEmbed(ctx.author,
                             title="이런! Cog 작업중 오류가 발생했어요...",
                             description=f"```py\n{ex}\n```",
