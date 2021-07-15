@@ -2,11 +2,11 @@ import os
 import sys
 import traceback
 from discord.ext import commands
-from module import JBotClient, AuthorEmbed, EmbedColor
+from module import LaytheClient, AuthorEmbed, EmbedColor
 
 
 class Core(commands.Cog):
-    def __init__(self, bot: JBotClient):
+    def __init__(self, bot: LaytheClient):
         self.bot = bot
 
     @commands.command(name="cog")

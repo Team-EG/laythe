@@ -1,10 +1,10 @@
 import typing
 from discord.ext import commands
-from module import JBotClient, AuthorEmbed, EmbedColor, Pager
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
 
 
 class Manage(commands.Cog):
-    def __init__(self, bot: JBotClient):
+    def __init__(self, bot: LaytheClient):
         self.bot = bot
 
     @commands.group(name="정리", description="메세지를 대량으로 삭제해요.", aliases=["purge"])

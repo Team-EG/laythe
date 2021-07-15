@@ -1,9 +1,9 @@
 from discord.ext import commands
-from module import JBotClient, AuthorEmbed, EmbedColor
+from module import LaytheClient, AuthorEmbed, EmbedColor
 
 
 class Utils(commands.Cog):
-    def __init__(self, bot: JBotClient):
+    def __init__(self, bot: LaytheClient):
         self.bot = bot
 
     @commands.command(name="맞춤법", description="맞춤법을 검사해줘요. 틀린 경우가 있으니 참고용으로만 사용해주세요.")

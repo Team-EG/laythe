@@ -1,5 +1,5 @@
 """
-    jbot-v3
+    laythe
     Copyright (C) 2021 Team EG
 
     This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from .client import JBotClient
+from .client import LaytheClient
 from .templates import *
 from .pager import Pager

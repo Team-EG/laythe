@@ -1,14 +1,14 @@
 import typing
 import asyncio
 import discord
-from . import JBotClient
+from . import LaytheClient
 
 
 class Scroll:
     emoji_list = []
 
     def __init__(self,
-                 client: JBotClient,
+                 client: LaytheClient,
                  channel: typing.Union[discord.TextChannel, discord.DMChannel],
                  author: discord.Member,
                  items: list,

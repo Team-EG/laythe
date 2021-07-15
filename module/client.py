@@ -10,7 +10,7 @@ from discord.ext import commands
 from extlib import BotList, SpellChecker
 
 
-class JBotClient(commands.AutoShardedBot):
+class LaytheClient(commands.AutoShardedBot):
     def __init__(self, logger: logging.Logger, **kwargs):
         super().__init__(command_prefix=self.prefix,
                          help_command=None,
@@ -36,7 +36,7 @@ class JBotClient(commands.AutoShardedBot):
 
     async def prefix(self, bot, message):
         # DB 모듈 제작 이후 수정 예정
-        return commands.when_mentioned_or("제이봇 ", "j!")(bot, message)
+        return commands.when_mentioned_or("레이테 ", "laythe ", "Laythe", "l!", "L!")(bot, message)
 
     async def init_lava(self):
         raise NotImplementedError

@@ -1,10 +1,10 @@
 import time
 from discord.ext import commands
-from module import JBotClient, AuthorEmbed, EmbedColor, Pager
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
 
 
 class Basic(commands.Cog):
-    def __init__(self, bot: JBotClient):
+    def __init__(self, bot: LaytheClient):
         self.bot = bot
 
     @commands.command(name="ping", description="봇의 레이턴시를 알려줘요.", aliases=["핑", "퐁", "pong"])

@@ -7,11 +7,11 @@ import psutil
 import discord
 import discord_slash
 from discord.ext import commands
-from module import JBotClient, AuthorEmbed, EmbedColor, utils
+from module import LaytheClient, AuthorEmbed, EmbedColor, utils
 
 
 class Dev(commands.Cog):
-    def __init__(self, bot: JBotClient):
+    def __init__(self, bot: LaytheClient):
         self.bot = bot
 
     @commands.group(name="dev")
@@ -22,7 +22,7 @@ class Dev(commands.Cog):
 
         kvote, uvote = await self.bot.botlist.get_vote_count()
         embed = AuthorEmbed(ctx.author,
-                            title="제이봇 개발자 패널",
+                            title="Laythe 개발자 패널",
                             description=f"<:python:815496209682006036> Python `{platform.python_version()}` | "
                                         f"<:dpy2:815496751452651540> discord.py `{discord.__version__}` | "
                                         f"<:slash:815496477224468521> discord-py-slash-command `{discord_slash.__version__}`\n"
@@ -40,7 +40,7 @@ class Dev(commands.Cog):
         embed.add_field(name="샤드",
                         value=f"총 `{len(self.bot.shards)}`개 (이 길드 샤드 ID: `{ctx.guild.shard_id}`)"
                         if issubclass(type(self.bot), discord.AutoShardedClient) or self.bot.shard_count else
-                        "⚠ 제이봇이 현재 샤딩되지 않았습니다. 잘못된 클래스가 상속되었을 수 있습니다.",
+                        "⚠ 레이테가 현재 샤딩되지 않았습니다.",
                         inline=False)
         process = psutil.Process()
         memory = psutil.virtual_memory()
@@ -73,7 +73,7 @@ class Dev(commands.Cog):
         exec(compile(code, "<string>", "exec"))
         func = eval("execute_this")(self, ctx)
         embed = AuthorEmbed(ctx.author,
-                            title="제이봇 EVAL",
+                            title="Laythe EVAL",
                             color=EmbedColor.DEFAULT,
                             timestamp=ctx.message.created_at,
                             display_footer=True)

@@ -1,7 +1,7 @@
 import typing
 import asyncio
 import discord
-from . import JBotClient
+from . import LaytheClient
 
 
 class Pager:
@@ -11,7 +11,7 @@ class Pager:
     emoji_list = [prev_emoji, stop_emoji, next_emoji]
 
     def __init__(self,
-                 client: JBotClient,
+                 client: LaytheClient,
                  channel: typing.Union[discord.TextChannel, discord.DMChannel],
                  author: discord.Member,
                  pages: typing.List[typing.Union[str, discord.Embed]],
