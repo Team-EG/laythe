@@ -25,11 +25,11 @@ class Dev(commands.Cog):
                             title="Laythe 개발자 패널",
                             description=f"<:python:815496209682006036> Python `{platform.python_version()}` | "
                                         f"<:dpy2:815496751452651540> discord.py `{discord.__version__}` | "
-                                        f"<:slash:815496477224468521> discord-py-slash-command `{discord_slash.__version__}`\n"
+                                        f"<:din:865108330750017547> discord-py-interactions `{discord_slash.__version__}`\n"
                                         f"플랫폼: `{platform.platform()}`\n"
                                         f"길드 `{len(self.bot.guilds)}`개 | 유저 `{len(self.bot.users)}`명\n"
-                                        f"[KOREANBOTS](https://koreanbots.dev/bots/622710354836717580) `{kvote}` ❤ | "
-                                        f"[UNIQUEBOTS](https://uniquebots.kr/bots/info/622710354836717580) `{uvote}` ❤",
+                                        f"[KOREANBOTS](https://koreanbots.dev/bots/{self.bot.user.id}) `{kvote}` ❤ | "
+                                        f"[UNIQUEBOTS](https://uniquebots.kr/bots/info/{self.bot.user.id}) `{uvote}` ❤",
                             timestamp=ctx.message.created_at,
                             color=EmbedColor.DEFAULT,
                             display_footer=True)

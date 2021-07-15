@@ -38,6 +38,11 @@ class Basic(commands.Cog):
         """
         await ctx.reply(embed=embed)
 
+    @commands.command(name="페이저")
+    async def pager_test(self, ctx):
+        pager = Pager(self.bot, ctx.channel, ctx.author, ["페이지 1", "페이지 2", "페이지 3"], reply=ctx.message)
+        await pager.start_flatten()
+
 
 def setup(bot):
     bot.add_cog(Basic(bot))

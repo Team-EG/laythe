@@ -7,6 +7,7 @@ import aiohttp
 import discord
 from contextlib import suppress
 from discord.ext import commands
+from discord_slash import SlashCommand
 from extlib import BotList, SpellChecker
 
 
@@ -20,6 +21,7 @@ class LaytheClient(commands.AutoShardedBot):
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.botlist = BotList(self, self.get_setting("kbot_token"), self.get_setting("ubot_token"), run_update=not self.is_debug)
         self.spell = SpellChecker(self.session)
+        self.slash = SlashCommand(self)
 
     @staticmethod
     def get_setting(key):

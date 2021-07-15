@@ -1,6 +1,8 @@
 import typing
 import asyncio
 import discord
+from discord_slash import ComponentContext
+from discord_slash.utils import manage_components
 from . import LaytheClient
 
 
@@ -62,36 +64,42 @@ class Pager:
     async def __start(self):
         func = self.channel.send if not self.reply else self.reply.reply
         self.message = await func(content=self.pages[0] if not self.is_embed else None, embed=self.pages[0] if self.is_embed else None)
-        [self.client.loop.create_task(self.message.add_reaction(x)) for x in self.full_emoji_list]
+
+        next_button = manage_components.create_button(style=1, label="다음", custom_id=f"next{self.message.id}", emoji=self.next_emoji)
+        prev_button = manage_components.create_button(style=1, label="이전", custom_id=f"prev{self.message.id}", emoji=self.prev_emoji)
+        stop_button = manage_components.create_button(style=2, custom_id=f"stop{self.message.id}", emoji=self.stop_emoji)
+        action_row = manage_components.create_actionrow(prev_button, stop_button, next_button)
+
+        await self.message.edit(components=[action_row])
+
         while not self.client.is_closed():
             try:
-                reaction = (await self.client.wait_for("reaction_add",
-                                                       check=lambda r, u: r.message.id == self.message.id and
-                                                                          str(r.emoji) in self.full_emoji_list and
-                                                                          u.id == self.author.id,
-                                                       timeout=self.timeout))[0]
-                if str(reaction.emoji) in self.custom_emojis:
-                    self.client.loop.create_task(self.client.safe_clear_reaction(reaction, self.author))
-                    yield reaction
+                ctx: ComponentContext = await manage_components.wait_for_component(
+                    self.client,
+                    [self.message],
+                    action_row,
+                    check=lambda comp_ctx: int(comp_ctx.author_id) == int(self.author.id),
+                    timeout=self.timeout
+                )
 
-                elif str(reaction.emoji) == self.stop_emoji:
-                    self.client.loop.create_task(self.client.safe_clear_reactions(self.message))
+                await ctx.defer(edit_origin=True)
+
+                if ctx.custom_id.startswith("stop"):
+                    await self.message.edit(components=[])
                     yield self.current_page
                     break
 
-                elif str(reaction.emoji) == self.next_emoji:
+                elif ctx.custom_id.startswith("next"):
                     page = self.next()
                     await self.message.edit(content=page if not self.is_embed else None,
                                             embed=page if self.is_embed else None)
-                    self.client.loop.create_task(self.client.safe_clear_reaction(reaction, self.author))
 
-                elif str(reaction.emoji) == self.prev_emoji:
+                elif ctx.custom_id.startswith("prev"):
                     page = self.prev()
                     await self.message.edit(content=page if not self.is_embed else None,
                                             embed=page if self.is_embed else None)
-                    self.client.loop.create_task(self.client.safe_clear_reaction(reaction, self.author))
 
             except asyncio.TimeoutError:
-                self.client.loop.create_task(self.client.safe_clear_reactions(self.message))
+                await self.message.edit(components=[action_row])
                 yield self.current_page
                 break
