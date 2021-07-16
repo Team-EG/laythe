@@ -3,7 +3,7 @@ from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
 
 
-class Basic(commands.Cog):
+class Basic(commands.Cog, name="일반"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 

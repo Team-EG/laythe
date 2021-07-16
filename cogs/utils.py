@@ -2,7 +2,7 @@ from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor
 
 
-class Utils(commands.Cog):
+class Utils(commands.Cog, name="유틸리티"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 

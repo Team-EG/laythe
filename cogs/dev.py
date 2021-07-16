@@ -10,7 +10,7 @@ from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor, utils
 
 
-class Dev(commands.Cog):
+class Dev(commands.Cog, name="PRIVATE_개발자"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 

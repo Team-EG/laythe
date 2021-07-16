@@ -20,9 +20,20 @@ import os
 import logging
 from module import LaytheClient
 
+print(r"""
+ _                    _    _           
+| |                  | |  | |          
+| |      __ _  _   _ | |_ | |__    ___ 
+| |     / _` || | | || __|| '_ \  / _ \
+| |____| (_| || |_| || |_ | | | ||  __/
+\_____/ \__,_| \__, | \__||_| |_| \___|
+                __/ |                  
+               |___/                   
+""")
+
 logger = logging.getLogger('laythe')
 logging.basicConfig(level=logging.INFO)  # DEBUG/INFO/WARNING/ERROR/CRITICAL
-handler = logging.FileHandler(filename=f'jbot.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename=f'laythe.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 

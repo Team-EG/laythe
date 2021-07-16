@@ -14,7 +14,7 @@ class Help(commands.Cog, name="도움말"):
                             color=EmbedColor.DEFAULT,
                             timestamp=ctx.message.created_at)
         for name, cog in self.bot.cogs.items():
-            if not cog.get_commands():
+            if name.startswith("PRIVATE_") or not cog.get_commands():
                 continue
             embed.add_field(name=name, value=', '.join([f"`{x.name}`" for x in cog.get_commands()]), inline=False)
         await ctx.reply(embed=embed)

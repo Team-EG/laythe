@@ -5,7 +5,7 @@ from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
 
 
-class Manage(commands.Cog):
+class Manage(commands.Cog, name="관리"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 

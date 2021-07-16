@@ -5,7 +5,7 @@ from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor
 
 
-class Core(commands.Cog):
+class Core(commands.Cog, name="PRIVATE_코어"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 
@@ -14,6 +14,8 @@ class Core(commands.Cog):
     async def manage_cog(self, ctx: commands.Context, *args):
         if args:
             return await self.light_cog_manage(ctx, *args)
+        else:
+            await ctx.reply("이런! 아직 Cog 관리 패널은 지원하지 않아요...")
 
     async def light_cog_manage(self, ctx: commands.Context, action: str, name: str = None):
         base = AuthorEmbed(ctx.author,
