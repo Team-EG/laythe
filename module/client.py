@@ -68,6 +68,7 @@ class LaytheClient(commands.AutoShardedBot):
             ctx = await manage_components.wait_for_component(
                 self, message, action_row, check=lambda comp_ctx: int(comp_ctx.author_id) == int(author.id), timeout=timeout
             )
+            await ctx.defer(edit_origin=True)
             return ctx.custom_id.startswith("yes")
         except asyncio.TimeoutError:
             return None
