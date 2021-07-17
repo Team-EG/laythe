@@ -85,7 +85,6 @@ class Pager:
                 await ctx.defer(edit_origin=True)
 
                 if ctx.custom_id.startswith("stop"):
-                    await self.message.edit(components=[])
                     yield self.current_page
                     break
 
@@ -100,6 +99,12 @@ class Pager:
                                             embed=page if self.is_embed else None)
 
             except asyncio.TimeoutError:
-                await self.message.edit(components=[action_row])
                 yield self.current_page
                 break
+
+        next_button = manage_components.create_button(style=1, label="다음", custom_id=f"next{self.message.id}", emoji=self.next_emoji, disabled=True)
+        prev_button = manage_components.create_button(style=1, label="이전", custom_id=f"prev{self.message.id}", emoji=self.prev_emoji, disabled=True)
+        stop_button = manage_components.create_button(style=2, custom_id=f"stop{self.message.id}", emoji=self.stop_emoji, disabled=True)
+        action_row = manage_components.create_actionrow(prev_button, stop_button, next_button)
+
+        await self.message.edit(components=[action_row])

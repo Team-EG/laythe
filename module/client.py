@@ -8,6 +8,7 @@ import discord
 from contextlib import suppress
 from discord.ext import commands
 from discord_slash import SlashCommand
+from discord_slash.utils import manage_components
 from .database import LaytheDB
 from extlib import BotList, SpellChecker
 
@@ -44,27 +45,38 @@ class LaytheClient(commands.AutoShardedBot):
         return self.get_setting("debug")
 
     async def prefix(self, bot, message):
-        # DB 모듈 제작 이후 수정 예정
-        return commands.when_mentioned_or("레이테 ", "laythe ", "Laythe", "l!", "L!", "ㅣ!")(bot, message)
+        prefix = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s", (message.guild.id,))
+        if not prefix:
+            await self.db.execute("INSERT INTO settings(guild_id) VALUES (%s)", (message.guild.id,))
+        else:
+            prefix = prefix[0]["custom_prefix"]
+        prefixes = ["레이테 ", "laythe ", "Laythe", "l!", "L!", "ㅣ!"]
+        if prefix:
+            prefixes.append(prefix)
+        return commands.when_mentioned_or(*prefixes)(bot, message)
 
     async def init_all_ext(self):
         await self.wait_until_ready()
         await self.db.login()
 
     async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
-        emoji_list = ["⭕", "❌"]
-        [self.loop.create_task(message.add_reaction(x)) for x in emoji_list]
+        yes_button = manage_components.create_button(3, "네", "⭕", f"yes{message.id}")
+        no_button = manage_components.create_button(4, "아니요", "❌", f"no{message.id}")
+        action_row = manage_components.create_actionrow(yes_button, no_button)
+        await message.edit(components=[action_row])
         try:
-            reaction = (
-                await self.wait_for(
-                    "reaction_add",
-                    timeout=timeout,
-                    check=lambda r, u: r.message.id == message.id and str(r.emoji) in emoji_list and u == author
-                )
-            )[0]
-            return str(reaction.emoji) == emoji_list[0]
+            ctx = await manage_components.wait_for_component(
+                self, message, action_row, check=lambda comp_ctx: int(comp_ctx.author_id) == int(author.id), timeout=timeout
+            )
+            return ctx.custom_id.startswith("yes")
         except asyncio.TimeoutError:
             return None
+        finally:
+            yes_button = manage_components.create_button(3, "네", "⭕", f"yes{message.id}", disabled=True)
+            no_button = manage_components.create_button(4, "아니요", "❌", f"no{message.id}", disabled=True)
+            action_row = manage_components.create_actionrow(yes_button, no_button)
+            await message.edit(components=[action_row])
+
 
     async def safe_clear_reactions(self, message: discord.Message):
         reactions = message.reactions
@@ -82,6 +94,6 @@ class LaytheClient(commands.AutoShardedBot):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))
 
     async def close(self):
-        self.db.close()
+        await self.db.close()
         await self.session.close()
         await super().close()
