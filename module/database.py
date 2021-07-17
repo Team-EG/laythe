@@ -1,4 +1,5 @@
 import aiomysql
+import aiosqlite
 
 
 class LaytheDB:
@@ -24,3 +25,24 @@ class LaytheDB:
             async with conn.cursor() as cur:
                 await cur.execute(sql, param)
                 return await cur.fetchall()
+
+
+class SQLiteCache:
+    def __init__(self, loop):
+        # This is to load cache as fast as possible.
+        self.db: aiosqlite.Connection = loop.run_until_complete(aiosqlite.connect(":memory:"))
+        self.db.row_factory = aiosqlite.Row
+
+    async def close(self):
+        await self.db.close()
+
+    async def exec_sql(self, line, param: iter = None):
+        await self.db.execute(line, param)
+        await self.db.commit()
+
+    async def res_sql(self, line, param: iter = None, return_raw=False) -> list:
+        async with self.db.execute(line, param) as cur:
+            rows = await cur.fetchall()
+            if not return_raw:
+                return [dict(x) for x in rows]
+            return [x for x in rows]

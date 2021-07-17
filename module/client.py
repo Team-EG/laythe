@@ -9,7 +9,7 @@ from contextlib import suppress
 from discord.ext import commands
 from discord_slash import SlashCommand
 from discord_slash.utils import manage_components
-from .database import LaytheDB
+from .database import LaytheDB, SQLiteCache
 from extlib import BotList, SpellChecker
 
 
@@ -29,6 +29,7 @@ class LaytheClient(commands.AutoShardedBot):
                            self.get_setting("dbid"),
                            self.get_setting("dbpw"),
                            self.get_setting("tgt_db"))
+        self.cache = SQLiteCache(self.loop)
         self.loop.create_task(self.init_all_ext())
 
     @staticmethod
@@ -78,7 +79,6 @@ class LaytheClient(commands.AutoShardedBot):
             action_row = manage_components.create_actionrow(yes_button, no_button)
             await message.edit(components=[action_row])
 
-
     async def safe_clear_reactions(self, message: discord.Message):
         reactions = message.reactions
         try:
@@ -96,5 +96,6 @@ class LaytheClient(commands.AutoShardedBot):
 
     async def close(self):
         await self.db.close()
+        await self.cache.close()
         await self.session.close()
         await super().close()
