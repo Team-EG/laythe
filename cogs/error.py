@@ -31,7 +31,7 @@ class Error(commands.Cog):
         if report_required:
             conf = await self.bot.confirm(ctx.author, msg)
             if conf:
-                debug_format = f"===JBOT-DEBUG===\n" \
+                debug_format = f"===LAYTHE-DEBUG===\n" \
                                f"MSG: {ctx.message.content}\n" \
                                f"AUTHOR: {ctx.author} (ID: {ctx.author.id})\n" \
                                f"TRACEBACK:\n\n" \

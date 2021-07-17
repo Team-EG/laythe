@@ -1,4 +1,6 @@
 import time
+
+import discord
 from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
 
@@ -7,7 +9,7 @@ class Basic(commands.Cog, name="일반"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 
-    @commands.command(name="ping", description="봇의 레이턴시를 알려줘요.", aliases=["핑", "퐁", "pong"])
+    @commands.command(name="핑", description="봇의 레이턴시를 알려줘요.", aliases=["ping", "퐁", "pong"])
     async def ping(self, ctx: commands.Context):
         send_start = time.time()
         msg = await ctx.send("잠시만 기다려주세요... (1)")
@@ -37,6 +39,14 @@ class Basic(commands.Cog, name="일반"):
         embed.add_field(name="메시지 삭제 레이턴시", value=f"{round(delete_latency*1000)}ms")
         """
         await ctx.reply(embed=embed)
+
+    @commands.command(name="hellothisisverification", description="개발자를 알려줘요. 한디리 봇 추가 심사 통과용이에요.")
+    async def verify_dev(self, ctx):
+        developer = self.bot.get_user(288302173912170497)
+        if developer:
+            await ctx.reply(embed=discord.Embed().set_author(name=str(developer)+f" ({developer.id})", icon_url=developer.avatar_url))
+        else:
+            await ctx.reply(embed=discord.Embed().set_author(name="eunwoo1104#9600 (288302173912170497)"))
 
     @commands.command(name="페이저")
     async def pager_test(self, ctx):

@@ -8,6 +8,7 @@ import discord
 from contextlib import suppress
 from discord.ext import commands
 from discord_slash import SlashCommand
+from .database import LaytheDB
 from extlib import BotList, SpellChecker
 
 
@@ -22,6 +23,12 @@ class LaytheClient(commands.AutoShardedBot):
         self.botlist = BotList(self, self.get_setting("kbot_token"), self.get_setting("ubot_token"), run_update=not self.is_debug)
         self.spell = SpellChecker(self.session)
         self.slash = SlashCommand(self)
+        self.db = LaytheDB(self.get_setting("dbhost"),
+                           self.get_setting("dbport"),
+                           self.get_setting("dbid"),
+                           self.get_setting("dbpw"),
+                           self.get_setting("tgt_db"))
+        self.loop.create_task(self.init_all_ext())
 
     @staticmethod
     def get_setting(key):
@@ -38,10 +45,11 @@ class LaytheClient(commands.AutoShardedBot):
 
     async def prefix(self, bot, message):
         # DB 모듈 제작 이후 수정 예정
-        return commands.when_mentioned_or("레이테 ", "laythe ", "Laythe", "l!", "L!")(bot, message)
+        return commands.when_mentioned_or("레이테 ", "laythe ", "Laythe", "l!", "L!", "ㅣ!")(bot, message)
 
-    async def init_lava(self):
-        raise NotImplementedError
+    async def init_all_ext(self):
+        await self.wait_until_ready()
+        await self.db.login()
 
     async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
         emoji_list = ["⭕", "❌"]
@@ -74,5 +82,6 @@ class LaytheClient(commands.AutoShardedBot):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))
 
     async def close(self):
+        self.db.close()
         await self.session.close()
         await super().close()
