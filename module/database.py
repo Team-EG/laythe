@@ -40,6 +40,10 @@ class SQLiteCache:
         await self.db.execute(line, param)
         await self.db.commit()
 
+    async def exec_many(self, line, params: iter = None):
+        await self.db.executemany(line, params)
+        await self.db.commit()
+
     async def res_sql(self, line, param: iter = None, return_raw=False) -> list:
         async with self.db.execute(line, param) as cur:
             rows = await cur.fetchall()

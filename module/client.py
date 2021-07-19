@@ -10,6 +10,7 @@ from discord.ext import commands
 from discord_slash import SlashCommand
 from discord_slash.utils import manage_components
 from .database import LaytheDB, SQLiteCache
+from .cache import CacheManager
 from extlib import BotList, SpellChecker
 
 
@@ -30,6 +31,8 @@ class LaytheClient(commands.AutoShardedBot):
                            self.get_setting("dbpw"),
                            self.get_setting("tgt_db"))
         self.cache = SQLiteCache(self.loop)
+        self.cache_manager = CacheManager(self)
+        self.db_ready = False
         self.loop.create_task(self.init_all_ext())
 
     @staticmethod
@@ -46,12 +49,15 @@ class LaytheClient(commands.AutoShardedBot):
         return self.get_setting("debug")
 
     async def prefix(self, bot, message):
-        prefix = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s", (message.guild.id,))
-        if not prefix:
-            await self.db.execute("INSERT INTO settings(guild_id) VALUES (%s)", (message.guild.id,))
-        else:
-            prefix = prefix[0]["custom_prefix"]
         prefixes = ["레이테 ", "laythe ", "Laythe", "l!", "L!", "ㅣ!"]
+        if not isinstance(message.channel, discord.TextChannel):
+            return commands.when_mentioned_or(*prefixes)(bot, message)
+        bot_settings = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s", (message.guild.id,))
+        if not bot_settings:
+            await self.db.execute("INSERT INTO settings(guild_id) VALUES (%s)", (message.guild.id,))
+            prefix = None
+        else:
+            prefix = bot_settings[0]["custom_prefix"]
         if prefix:
             prefixes.append(prefix)
         return commands.when_mentioned_or(*prefixes)(bot, message)
@@ -59,6 +65,8 @@ class LaytheClient(commands.AutoShardedBot):
     async def init_all_ext(self):
         await self.wait_until_ready()
         await self.db.login()
+        await self.cache_manager.update_cache()
+        self.db_ready = True
 
     async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
         yes_button = manage_components.create_button(3, "네", "⭕", f"yes{message.id}")

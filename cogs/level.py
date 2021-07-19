@@ -12,6 +12,7 @@ class Level(commands.Cog, name="레벨"):
 
     async def init_cog(self):
         await self.bot.wait_until_ready()
+        await self.bot.cache.exec_sql("""DROP TABLE IF EXISTS level_cache""")
         await self.bot.cache.exec_sql("""CREATE TABLE IF NOT EXISTS level_cache ("guild_id" INTEGER NOT NULL, "user_id"INTEGER NOT NULL, "last_message_timestamp"INTEGER NOT NULL)""")
 
     @staticmethod
@@ -23,16 +24,20 @@ class Level(commands.Cog, name="레벨"):
         if message.author.bot or not isinstance(message.channel, discord.TextChannel) or "laythe:leveloff" in (message.channel.topic or ""):
             return
 
-        cached = await self.bot.cache.res_sql("""SELECT last_message_timestamp FROM level_cache WHERE guild_id=? AND user_id=?""",
+        use_level = await self.bot.cache_manager.get_settings(message.guild.id, "use_level")
+        if not use_level or not use_level[0]["use_level"]:
+            return
+
+        cached = await self.bot.cache.res_sql("""SELECT last_message_timestamp FROM level_cache WHERE guild_id=? AND user_id=?""",  # noqa
                                               (message.guild.id, message.author.id))
         time_now = round(time.time())
         if not cached:
-            await self.bot.cache.exec_sql("""INSERT INTO level_cache VALUES(?, ?, ?)""",
+            await self.bot.cache.exec_sql("""INSERT INTO level_cache VALUES(?, ?, ?)""",  # noqa
                                           (message.guild.id, message.author.id, time_now))
             return
         elif cached[0]["last_message_timestamp"]+60 > time_now:
             return
-        await self.bot.cache.exec_sql("""UPDATE level_cache SET last_message_timestamp=? WHERE guild_id=? AND user_id=?""",
+        await self.bot.cache.exec_sql("""UPDATE level_cache SET last_message_timestamp=? WHERE guild_id=? AND user_id=?""",  # noqa
                                       (time_now, message.guild.id, message.author.id))
         current = await self.bot.db.fetch("""SELECT exp, level FROM levels WHERE guild_id=%s AND user_id=%s""",
                                           (message.guild.id, message.author.id))
@@ -45,7 +50,7 @@ class Level(commands.Cog, name="레벨"):
         required_exp = self.calc_exp_required(level+1)
         if required_exp < exp:
             level += 1
-            await message.channel.send(f"🎉 {message.author.mention}님의 레벨이 올라갔습니다! (`{level-1}` -> `{level}`)")
+            await message.channel.send(f"🎉 {message.author.mention}님의 레벨이 올라갔어요! (`{level-1}` -> `{level}`)")
         await self.bot.db.execute("""UPDATE levels SET exp=%s, level=%s WHERE guild_id=%s AND user_id=%s""",
                                   (exp, level, message.guild.id, message.author.id))
 
