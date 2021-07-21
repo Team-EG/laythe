@@ -6,5 +6,10 @@
     "debug": false,
     "lavahost": "LAVALINK.URL",
     "lavaport": 0,
-    "lavapw": "LAVALINK_PASSWORD"
+    "lavapw": "LAVALINK_PASSWORD",
+    "dbhost": "MYSQL_OR_MARIADB_URL",
+    "dbport": 0,
+    "dbid": "DB_ACCOUNT",
+    "dbpw": "DB_ACCOUNT_PASSWORD",
+    "tgt_db": "DB_NAME"
 }
