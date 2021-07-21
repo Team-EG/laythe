@@ -17,6 +17,7 @@ class Tasks(commands.Cog, name="태스크"):
     async def update_cache(self):
         if self.bot.db_ready:
             await self.bot.cache_manager.update_cache()
+            self.bot.logger.info("DB cache updated.")
 
     @tasks.loop()
     async def change_presence(self):

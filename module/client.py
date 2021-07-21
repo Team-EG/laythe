@@ -52,10 +52,18 @@ class LaytheClient(commands.AutoShardedBot):
         prefixes = ["레이테 ", "laythe ", "Laythe", "l!", "L!", "ㅣ!"]
         if not isinstance(message.channel, discord.TextChannel):
             return commands.when_mentioned_or(*prefixes)(bot, message)
-        bot_settings = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s", (message.guild.id,))
+        # bot_settings = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s", (message.guild.id,))
+        bot_settings = await self.cache_manager.get_settings(message.guild.id, "custom_prefix")
         if not bot_settings:
-            await self.db.execute("INSERT INTO settings(guild_id) VALUES (%s)", (message.guild.id,))
-            prefix = None
+            # Try direct fetching first if not found on cache
+            bot_settings = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s",
+                                               (message.guild.id,))
+            if not bot_settings:
+                await self.db.execute("INSERT INTO settings(guild_id) VALUES (%s)", (message.guild.id,))
+                prefix = None
+            else:
+                prefix = bot_settings[0]["custom_prefix"]
+            await self.cache_manager.update_single_guild_setup(message.guild.id)
         else:
             prefix = bot_settings[0]["custom_prefix"]
         if prefix:

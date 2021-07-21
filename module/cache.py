@@ -16,3 +16,7 @@ class CacheManager:
         else:
             tgt = ', '.join(tgt)
         return await self.bot.cache.res_sql(f"""SELECT {tgt} FROM settings_cache WHERE guild_id=?""", (guild_id,))  # noqa
+
+    async def update_single_guild_setup(self, guild_id):
+        setting = await self.bot.db.fetch("""SELECT * FROM settings WHERE guild_id=%s""", (guild_id,))
+        await self.bot.cache.exec_sql("""INSERT OR REPLACE INTO settings_cache VALUES(?, ?, ?)""", tuple(setting[0].values()))
