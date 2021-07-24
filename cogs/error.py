@@ -12,7 +12,8 @@ class Error(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
-        tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+        ex = error.original if isinstance(error, commands.CommandInvokeError) else error
+        tb = ''.join(traceback.format_exception(type(ex), ex, ex.__traceback__))
         base = AuthorEmbed(ctx.author, title="이런! ", display_footer=True, color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
         if self.bot.is_debug:
             print(tb, file=sys.stderr)

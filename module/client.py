@@ -5,6 +5,7 @@ import logging
 import datetime
 import aiohttp
 import discord
+import lavalink
 from contextlib import suppress
 from discord.ext import commands
 from discord_slash import SlashCommand
@@ -33,6 +34,7 @@ class LaytheClient(commands.AutoShardedBot):
         self.cache = SQLiteCache(self.loop)
         self.cache_manager = CacheManager(self)
         self.db_ready = False
+        self.lavalink: lavalink.Client
         self.loop.create_task(self.init_all_ext())
 
     @staticmethod
@@ -75,6 +77,12 @@ class LaytheClient(commands.AutoShardedBot):
         await self.db.login()
         await self.cache_manager.update_cache()
         self.db_ready = True
+        self.lavalink = lavalink.Client(self.user.id)
+        self.lavalink.add_node(host=self.get_setting("lavahost"),
+                               port=self.get_setting("lavaport"),
+                               password=self.get_setting("lavapw"),
+                               region="ko")
+        self.add_listener(self.lavalink.voice_update_handler, "on_socket_response")
 
     async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
         yes_button = manage_components.create_button(3, "네", "⭕", f"yes{message.id}")
@@ -111,6 +119,8 @@ class LaytheClient(commands.AutoShardedBot):
         super().run(self.get_setting("dev_token" if self.is_debug else "token"))
 
     async def close(self):
+        for x in self.lavalink.node_manager.nodes:
+            await self.lavalink.node_manager.remove_node(x)
         await self.db.close()
         await self.cache.close()
         await self.session.close()
