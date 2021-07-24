@@ -48,22 +48,6 @@ class Basic(commands.Cog, name="일반"):
         else:
             await ctx.reply(embed=discord.Embed().set_author(name="eunwoo1104#9600 (288302173912170497)"))
 
-    @commands.command(name="페이저")
-    async def pager_test(self, ctx):
-        pager = Pager(self.bot, ctx.channel, ctx.author, ["페이지 1", "페이지 2", "페이지 3"], reply=ctx.message)
-        await pager.start_flatten()
-
-    @commands.command(name="쿨다운")
-    @commands.cooldown(1, 10, commands.BucketType.member)
-    async def cooldown_test(self, ctx):
-        await ctx.send("굴")
-
-    @commands.command(name="커서")
-    async def cursor_test(self, ctx):
-        cursor = Cursor(self.bot, ctx.message, [*range(1, 10+1)], base_embed=AuthorEmbed(ctx.author, title="커서 테스트"))
-        comp_ctx, selected = await cursor.start()
-        await ctx.reply(str(selected))
-
 
 def setup(bot):
     bot.add_cog(Basic(bot))
