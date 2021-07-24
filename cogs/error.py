@@ -32,6 +32,7 @@ class Error(commands.Cog):
             base.title += "예기치 못한 오류가 발생했어요..."
             base.description = f"디버깅용 메시지: ```py\n{edited_tb}\n```"
             base.add_field(name="잠시만요!", value="이 오류 정보를 개발자에게 전송할까요? 오류 전송 시 오류 내용과 명령어를 실행한 메시지 내용이 전달돼요.")
+            report_required = True
         msg = await ctx.reply(embed=base)
         if report_required:
             conf = await self.bot.confirm(ctx.author, msg)

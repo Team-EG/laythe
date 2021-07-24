@@ -2,7 +2,7 @@ import time
 
 import discord
 from discord.ext import commands
-from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, Cursor
 
 
 class Basic(commands.Cog, name="일반"):
@@ -57,6 +57,12 @@ class Basic(commands.Cog, name="일반"):
     @commands.cooldown(1, 10, commands.BucketType.member)
     async def cooldown_test(self, ctx):
         await ctx.send("굴")
+
+    @commands.command(name="커서")
+    async def cursor_test(self, ctx):
+        cursor = Cursor(self.bot, ctx.message, [*range(1, 10+1)], base_embed=AuthorEmbed(ctx.author, title="커서 테스트"))
+        comp_ctx, selected = await cursor.start()
+        await ctx.reply(str(selected))
 
 
 def setup(bot):

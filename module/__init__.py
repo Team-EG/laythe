@@ -17,6 +17,7 @@
 """
 
 from .client import LaytheClient
+from .cursor import Cursor
 from .flags import LaytheSettingFlags
 from .templates import *
 from .pager import Pager
