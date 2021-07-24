@@ -12,6 +12,13 @@ class AuthorEmbed(discord.Embed):
         super().__init__(**kwargs)
 
 
+class GuildEmbed(discord.Embed):
+    def __init__(self, guild: discord.Guild, **kwargs):
+        display_footer = kwargs.get("display_footer", False)
+        self.set_author(name=guild.name, icon_url=guild.icon_url) if not display_footer else self.set_footer(icon_url=guild.icon_url, text=guild.name)
+        super().__init__(**kwargs)
+
+
 class EmbedColor:
     NEUTRAL = discord.Color.lighter_grey()
     NEGATIVE = discord.Color.red()
