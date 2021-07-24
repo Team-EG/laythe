@@ -52,3 +52,7 @@ class FlagBase:
         ret = cls()
         ret.value = value
         return ret
+
+
+class LaytheSettingFlags(FlagBase):
+    USE_LEVEL = 1 << 0

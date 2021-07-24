@@ -5,7 +5,7 @@ class CacheManager:
     async def update_cache(self):
         await self.bot.wait_until_ready()
         await self.bot.cache.exec_sql("""CREATE TABLE IF NOT EXISTS settings_cache 
-        ("guild_id" INTEGER NOT NULL PRIMARY KEY , "custom_prefix" TEXT, "use_level" INTEGER NOT NULL)""")
+        ("guild_id" INTEGER NOT NULL PRIMARY KEY , "custom_prefix" TEXT, "flags" INTEGER NOT NULL)""")
         guild_settings = await self.bot.db.fetch("""SELECT * FROM settings""")
         await self.bot.cache.exec_many("""INSERT OR REPLACE INTO settings_cache VALUES(?, ?, ?)""",
                                        [tuple(x.values()) for x in guild_settings])

@@ -2,7 +2,8 @@ import time
 import random
 import discord
 from discord.ext import commands
-from module import LaytheClient, AuthorEmbed, EmbedColor
+from module import LaytheClient, AuthorEmbed, EmbedColor, LaytheSettingFlags
+from module.utils import to_setting_flags
 
 
 class Level(commands.Cog, name="레벨"):
@@ -24,8 +25,11 @@ class Level(commands.Cog, name="레벨"):
         if message.author.bot or not isinstance(message.channel, discord.TextChannel) or "laythe:leveloff" in (message.channel.topic or ""):
             return
 
-        use_level = await self.bot.cache_manager.get_settings(message.guild.id, "use_level")
-        if not use_level or not use_level[0]["use_level"]:
+        flags = await self.bot.cache_manager.get_settings(message.guild.id, "flags")
+        if not flags:
+            return
+        flags = to_setting_flags(flags[0]["flags"])
+        if LaytheSettingFlags.USE_LEVEL not in flags:
             return
 
         cached = await self.bot.cache.res_sql("""SELECT last_message_timestamp FROM level_cache WHERE guild_id=? AND user_id=?""",  # noqa

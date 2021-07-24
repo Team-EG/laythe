@@ -1,3 +1,6 @@
+from .flags import LaytheSettingFlags
+
+
 def parse_second(time: int):
     parsed_time = ""
     day = time // (24 * 60 * 60)
@@ -24,3 +27,11 @@ def parse_bytesize(bytesize: float):
             return f"{bytesize}KB"
         return f"{mb}MB"
     return f"{gb}GB"
+
+
+def to_setting_flags(flags):
+    return LaytheSettingFlags.from_value(flags)
+
+
+def to_readable_bool(tf: bool):
+    return "네" if tf else "아니요"
