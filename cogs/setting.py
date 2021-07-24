@@ -7,7 +7,7 @@ class Setting(commands.Cog, name="봇 설정"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 
-    @commands.group(name="설정")
+    @commands.group(name="설정", description="이 서버에서의 레이테 설정을 보거나 수정할 수 있어요.", usage="`{prefix} 설정 도움` 명령어를 참고해주세요.")
     @commands.has_permissions(administrator=True)
     async def laythe_setting(self, ctx: commands.Context):
         if ctx.invoked_subcommand:

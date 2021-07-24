@@ -53,6 +53,11 @@ class Basic(commands.Cog, name="일반"):
         pager = Pager(self.bot, ctx.channel, ctx.author, ["페이지 1", "페이지 2", "페이지 3"], reply=ctx.message)
         await pager.start_flatten()
 
+    @commands.command(name="쿨다운")
+    @commands.cooldown(1, 10, commands.BucketType.member)
+    async def cooldown_test(self, ctx):
+        await ctx.send("굴")
+
 
 def setup(bot):
     bot.add_cog(Basic(bot))

@@ -3,6 +3,7 @@ import time
 import traceback
 from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor
+from module.utils import parse_second
 
 
 class Error(commands.Cog):
@@ -14,7 +15,7 @@ class Error(commands.Cog):
         tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
         base = AuthorEmbed(ctx.author, title="이런! ", display_footer=True, color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
         if self.bot.is_debug:
-            return print(tb, file=sys.stderr)
+            print(tb, file=sys.stderr)
         edited_tb = ("..." + tb[-1997:]) if len(tb) > 2000 else tb
         if isinstance(error, commands.CommandNotFound):
             return
@@ -23,6 +24,9 @@ class Error(commands.Cog):
         report_required = False
         if isinstance(error, commands.NotOwner):
             base.title += "이 명령어는 Team EG 개발자만 사용할 수 있는 명령어에요."
+        elif isinstance(error, commands.CommandOnCooldown):
+            base.title += "아직 쿨다운이 끝나지 않았어요."
+            base.description = f"{parse_second(round(error.retry_after))}만 더 기다려주세요."
         else:
             base.title += "예기치 못한 오류가 발생했어요..."
             base.description = f"디버깅용 메시지: ```py\n{edited_tb}\n```"

@@ -29,7 +29,7 @@ class Help(commands.Cog, name="도움말"):
                     cpage = cog_page.copy()
                 cpage.add_field(name=x.name, value=(f"{x.description}\n"
                                                     f"사용법: {x.usage or f'`{ctx.prefix}{x.name}`'}"
-                                                    + (f"\n에일리어스: `{'`, `'.join(x.aliases)}`" if x.aliases else "")).format(prefix=ctx.prefix), inline=False)
+                                                    + (f"\n별칭: `{'`, `'.join(x.aliases)}`" if x.aliases else "")).format(prefix=ctx.prefix), inline=False)
             pages.append(cpage)
         pager = Pager(self.bot, ctx.channel, ctx.author, pages, is_embed=True, reply=ctx.message)
         await pager.start_flatten()
