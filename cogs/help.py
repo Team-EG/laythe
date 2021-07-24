@@ -10,7 +10,7 @@ class Help(commands.Cog, name="도움말"):
     async def help(self, ctx: commands.Context):
         base_embed = AuthorEmbed(ctx.author,
                                  title="Laythe 명령어 리스트",
-                                 description="필수로 채워야 하는 항목은 `[항목이름:타입]`이고, 선택적이면 `(항목이름:타입)`으로 표시돼요.",
+                                 description="필수로 채워야 하는 항목은 `[항목이름:타입]`이고, 선택적이면 `(항목이름:타입:기본값)`으로 표시돼요.",
                                  color=EmbedColor.DEFAULT,
                                  timestamp=ctx.message.created_at)
         fpage = base_embed.copy()
@@ -29,7 +29,7 @@ class Help(commands.Cog, name="도움말"):
                     cpage = cog_page.copy()
                 cpage.add_field(name=x.name, value=(f"{x.description}\n"
                                                     f"사용법: {x.usage or f'`{ctx.prefix}{x.name}`'}"
-                                                    + (f"\n에일리어스: {', '.join(x.aliases)}" if x.aliases else "")).format(prefix=ctx.prefix), inline=False)
+                                                    + (f"\n에일리어스: `{'`, `'.join(x.aliases)}`" if x.aliases else "")).format(prefix=ctx.prefix), inline=False)
             pages.append(cpage)
         pager = Pager(self.bot, ctx.channel, ctx.author, pages, is_embed=True, reply=ctx.message)
         await pager.start_flatten()
