@@ -3,7 +3,7 @@ import time
 import traceback
 from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor
-from module.utils import parse_second
+from module.utils import parse_second, permission_translates
 
 
 class Error(commands.Cog):
@@ -28,6 +28,12 @@ class Error(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             base.title += "아직 쿨다운이 끝나지 않았어요."
             base.description = f"{parse_second(round(error.retry_after))}만 더 기다려주세요."
+        elif isinstance(error, commands.MissingPermissions):
+            base.title += "이 명령어를 실행할 권한이 부족해요."
+            base.description = f"이 명령어를 실행하기 위해 `{'`, `'.join([permission_translates.get(x, x) for x in error.missing_perms])}` 권한이 필요해요."
+        elif isinstance(error, commands.BotMissingPermissions):
+            base.title += "이 서버에서 제 권한이 이 명령어를 실행하기에는 부족해요."
+            base.description = f"`{'`, `'.join([permission_translates.get(x, x) for x in error.missing_perms])}` 권한을 저에게 부여해주세요."
         else:
             base.title += "예기치 못한 오류가 발생했어요..."
             base.description = f"디버깅용 메시지: ```py\n{edited_tb}\n```"

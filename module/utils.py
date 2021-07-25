@@ -35,3 +35,11 @@ def to_setting_flags(flags):
 
 def to_readable_bool(tf: bool):
     return "네" if tf else "아니요"
+
+
+permission_translates = {
+    "kick_members": "멤버 추방하기",
+    "ban_members": "멤버 차단하기",
+    "administrator": "관리자",
+    "manage_messages": "메시지 관리"
+}
