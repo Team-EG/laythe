@@ -1,8 +1,10 @@
+import math
 import discord
 import lavalink
 from discord.ext import commands
 from discord_slash import manage_components
-from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, Cursor, TrackEmbed
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, Cursor, TrackEmbed, GuildEmbed
+from module.utils import parse_second
 
 
 class Music(commands.Cog, name="음악"):
@@ -21,7 +23,7 @@ class Music(commands.Cog, name="음악"):
         if isinstance(event, lavalink.events.QueueEndEvent):
             guild: discord.Guild = self.bot.get_guild(int(event.player.guild_id))
             channel: discord.TextChannel = event.player.fetch("channel")
-            await channel.send(f"대기열이 비어있고 모든 노래를 재생했어요. 음성 채널에서 나갈께요.")
+            await channel.send(f"ℹ 대기열이 비어있고 모든 노래를 재생했어요. 음성 채널에서 나갈께요.")
             await self.bot.connect_to_voice(guild)
             await self.bot.lavalink.player_manager.destroy(guild.id)
         if isinstance(event, lavalink.events.TrackStartEvent):
@@ -36,21 +38,21 @@ class Music(commands.Cog, name="음악"):
         voice: discord.VoiceState = ctx.author.voice
 
         if check_playing and check_paused:
-            return 5, "코드에 문제가 있어요."
+            return 5, "❌ 코드에 문제가 있어요."
 
         if not voice or not voice.channel:
-            return 1, "먼저 음성 채널에 들어와주세요."
+            return 1, "❌ 먼저 음성 채널에 들어와주세요."
 
         lava = self.bot.lavalink.player_manager.get(ctx.guild.id)
 
         if check_connected and lava is None:
-            return 2, "먼저 음악을 재생해주세요."
+            return 2, "❌ 먼저 음악을 재생해주세요."
 
         if check_playing and lava.paused:
-            return 3, "음악이 재생중이 아니에요. 먼저 음악을 재생해주세요."
+            return 3, "❌ 음악이 재생중이 아니에요. 먼저 음악을 재생해주세요."
 
         if check_paused and not lava.paused:
-            return 4, "음악이 재생중이에요. 먼저 음악을 일시정지해주세요."
+            return 4, "❌ 음악이 재생중이에요. 먼저 음악을 일시정지해주세요."
 
         return 0, None
 
@@ -67,7 +69,7 @@ class Music(commands.Cog, name="음악"):
         resp = await lava.node.get_tracks(url)
         track = None
         if resp is None or len(resp["tracks"]) == 0:
-            return await ctx.reply("영상을 찾지 못했어요. 링크가 정확한지 또는 검색어가 정확한지 확인해주세요.")
+            return await ctx.reply("❌ 영상을 찾지 못했어요. 링크가 정확한지 또는 검색어가 정확한지 확인해주세요.")
 
         if resp["loadType"] == "SEARCH_RESULT":
             tracks = resp["tracks"]
@@ -90,13 +92,13 @@ class Music(commands.Cog, name="음악"):
             _msg, resp = cursor.result
             await _msg.delete()
             if resp is None:
-                return await ctx.reply("재생을 취소했어요.")
+                return await ctx.reply("❌ 재생을 취소했어요.")
             track = tracks[resp]
         elif resp["loadType"] == "PLAYLIST_LOADED":
-            conf = await ctx.reply(f"재생목록이 감지되었어요. 재생목록의 모든 영상을 추가할까요?")
+            conf = await ctx.reply(f"ℹ 재생목록이 감지되었어요. 재생목록의 모든 영상을 추가할까요?")
             y_or_n = await self.bot.confirm(ctx.author, conf)
             if not y_or_n:
-                return await conf.edit(content=f"재생을 취소했어요.")
+                return await conf.edit(content=f"❌ 재생을 취소했어요.")
             track = resp["tracks"]
         track = track or resp["tracks"][0]
         if isinstance(track, list):
@@ -123,23 +125,14 @@ class Music(commands.Cog, name="음악"):
         lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         await lava.skip()
 
-    @commands.command(name="일시정지", description="음악 플레이어를 일시정지해요.", aliases=["pause", "ps", "ㅔㄴ"])
+    @commands.command(name="일시정지", description="음악 플레이어를 일시정지 하거나 일시정지를 해제해요.", aliases=["pause", "ps", "ㅔㄴ", "재시작", "resume", "r", "ㄱ"])
     async def pause(self, ctx: commands.Context):
-        code, text = await self.voice_check(ctx, check_connected=True, check_playing=True)
+        code, text = await self.voice_check(ctx, check_connected=True)
         if code:
             return await ctx.reply(text)
         lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        await lava.set_pause(True)
-        await ctx.reply("✅ 음악 플레이어를 일시정지했어요.")
-
-    @commands.command(name="재시작", description="음악 플레이어 일시정지를 해제해요", aliases=["resume", "r", "ㄱ"])
-    async def resume(self, ctx: commands.Context):
-        code, text = await self.voice_check(ctx, check_connected=True, check_paused=True)
-        if code:
-            return await ctx.reply(text)
-        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        await lava.set_pause(False)
-        await ctx.reply(f"✅ 일시정지를 해제했어요.")
+        await lava.set_pause(not lava.paused)
+        await ctx.reply("✅ 음악 플레이어를 일시정지했어요." if lava.paused else "✅ 일시정지를 해제했어요.")
 
     @commands.command(name="정지", description="음악 플레이어를 정지해요.", aliases=["stop", "ㄴ새ㅔ"])
     async def stop(self, ctx: commands.Context):
@@ -164,6 +157,86 @@ class Music(commands.Cog, name="음악"):
             return await ctx.reply("❌ 볼륨 값은 1에서 1000 사이로만 가능해요.")
         await lava.set_volume(vol)
         await ctx.reply(f"✅ 볼륨을 `{vol}`%로 조정했어요.")
+
+    @commands.command(name="셔플", description="대기 리스트에서 음악을 무작위로 재생해요.", aliases=["랜덤", "random", "shuffle", "sf", "ㄶ", "ㄴㅎ"])
+    async def shuffle(self, ctx: commands.Context):
+        code, text = await self.voice_check(ctx, check_connected=True)
+        if code:
+            return await ctx.reply(text)
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        lava.set_shuffle(not lava.shuffle)
+        await ctx.send(f"✅ 랜덤 재생 기능이 {'켜졌어요!' if lava.shuffle else '꺼졌어요.'}")
+
+    @commands.command(name='루프', description="재생중인 음악을 무한 반복하거나 무한 반복을 해제해요.", aliases=["무한반복", "loop", "repeat"])
+    async def music_loop(self, ctx: commands.Context):
+        code, text = await self.voice_check(ctx, check_connected=True)
+        if code:
+            return await ctx.reply(text)
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        lava.set_repeat(not lava.repeat)
+        await ctx.send(f"✅ 반복 재생 기능이 {'켜졌어요!' if lava.repeat else '꺼졌어요.'}")
+
+    @commands.command(name="대기열", description="현재 음악 대기열을 보여줘요.", aliases=["대기리스트", "ql", "pl", "np", "queuelist", "playlist", "비", "ㅔㅣ"])
+    async def queue_list(self, ctx: commands.Context):
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        if not lava:
+            return await ctx.reply("❌ 먼저 아무 노래나 재생해주세요.")
+        front_embed = TrackEmbed(lava.current,
+                                 ctx.guild,
+                                 title="유튜브 음악 재생 - 현재 재생중",
+                                 timestamp=self.bot.kst,
+                                 show_requester=False)
+
+        length = lava.current.duration / 1000
+        now = lava._last_position / 1000
+        percent = now / length
+        pos = round(percent * 10)
+        base = ["-" for _ in range(10)]
+        base[pos if pos <= 9 else -1] = "o"
+        vid = parse_second(round(length))
+        cpos = parse_second(round(now))
+
+        front_embed.add_field(name="요청자", value=f"<@{lava.current.requester}>", inline=False)
+        front_embed.add_field(name="현재 볼륨", value=f"`{lava.volume}`%", inline=False)
+        front_embed.add_field(name="대기중인 음악 개수", value=f"{len(lava.queue)}개")
+        front_embed.set_footer(text=''.join(base) + f" | {cpos} / {vid}")
+        if lava.paused:
+            front_embed.add_field(name="플레이어 상태", value="현재 일시정지 중이에요.", inline=False)
+        elif lava.repeat:
+            front_embed.add_field(name="플레이어 상태", value="반복 재생 기능이 켜져있어요.", inline=False)
+        elif lava.shuffle:
+            front_embed.add_field(name="플레이어 상태", value="랜덤 재생 기능이 켜져있어요.", inline=False)
+        if len(lava.queue) == 0:
+            return await ctx.send(embed=front_embed)
+        pages = [front_embed]
+        max_page = math.ceil(len(lava.queue)/5)
+        base_embed = GuildEmbed(ctx.guild,
+                                title="유튜브 음악 재생 - 음악 대기열",
+                                description=f"총 {len(lava.queue)}개",
+                                color=EmbedColor.DEFAULT,
+                                timestamp=ctx.message.created_at)
+        tgt = base_embed.copy()
+        current_page = 1
+        tgt.set_footer(text=f"대기열 페이지 {current_page}/{max_page}")
+        for i, x in enumerate(lava.queue):
+            if i > 0 and (i+1) % 5 == 1:
+                pages.append(tgt)
+                tgt = base_embed.copy()
+                current_page += 1
+                tgt.set_footer(text=f"대기열 페이지 {current_page}/{max_page}")
+            tgt.add_field(name=f"#{i+1} - {x.title}", value=f"링크: {x.uri}\n요청자: <@{x.requester}>", inline=False)
+        pages.append(tgt)
+
+        last_embed = TrackEmbed(lava.queue[0],
+                                ctx.guild,
+                                title="유튜브 음악 재생 - 다음 음악",
+                                color=EmbedColor.POSITIVE,
+                                timestamp=ctx.message.created_at)
+
+        pages.append(last_embed)
+
+        pager = Pager(self.bot, ctx.channel, ctx.author, pages, is_embed=True, reply=ctx.message)
+        await pager.start_flatten()
 
 
 def setup(bot):

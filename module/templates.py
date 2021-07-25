@@ -34,5 +34,5 @@ class TrackEmbed(GuildEmbed):
         self.description = f"업로더: `{track.author}`\n제목: [`{track.title}`]({track.uri})"
         self.set_image(url=f"https://img.youtube.com/vi/{track.identifier}/hqdefault.jpg")
         requester = guild.get_member(track.requester)
-        if requester:
+        if requester and kwargs.get("show_requester", True):
             self.set_footer(text=f"요청자: {requester.display_name}", icon_url=requester.avatar_url)
