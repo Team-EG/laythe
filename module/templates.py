@@ -1,5 +1,6 @@
 import typing
 import discord
+import lavalink
 
 
 class AuthorEmbed(discord.Embed):
@@ -24,3 +25,14 @@ class EmbedColor:
     NEGATIVE = discord.Color.red()
     POSITIVE = discord.Color.green()
     DEFAULT = discord.Color.from_rgb(225, 225, 225)
+
+
+class TrackEmbed(GuildEmbed):
+    def __init__(self, track: lavalink.AudioTrack, guild: discord.Guild, **kwargs):
+        kwargs.setdefault("color", EmbedColor.NEGATIVE)
+        super().__init__(guild, **kwargs)
+        self.description = f"업로더: `{track.author}`\n제목: [`{track.title}`]({track.uri})"
+        self.set_image(url=f"https://img.youtube.com/vi/{track.identifier}/hqdefault.jpg")
+        requester = guild.get_member(track.requester)
+        if requester:
+            self.set_footer(text=f"요청자: {requester.display_name}", icon_url=requester.avatar_url)

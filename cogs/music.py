@@ -2,7 +2,7 @@ import discord
 import lavalink
 from discord.ext import commands
 from discord_slash import manage_components
-from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, Cursor
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, Cursor, TrackEmbed
 
 
 class Music(commands.Cog, name="음악"):
@@ -24,6 +24,13 @@ class Music(commands.Cog, name="음악"):
             await channel.send(f"대기열이 비어있고 모든 노래를 재생했어요. 음성 채널에서 나갈께요.")
             await self.bot.connect_to_voice(guild)
             await self.bot.lavalink.player_manager.destroy(guild.id)
+        if isinstance(event, lavalink.events.TrackStartEvent):
+            embed = TrackEmbed(event.track,
+                               self.bot.get_guild(int(event.player.guild_id)),
+                               title="유튜브 음악 재생 - 재생 시작",
+                               timestamp=self.bot.kst)
+            channel = event.player.fetch("channel")
+            await channel.send(embed=embed, delete_after=10)
 
     async def voice_check(self, ctx: commands.Context, *, check_connected: bool = False, check_playing: bool = False, check_paused: bool = False) -> tuple:
         voice: discord.VoiceState = ctx.author.voice
@@ -52,6 +59,8 @@ class Music(commands.Cog, name="음악"):
         code, text = await self.voice_check(ctx)
         if code:
             return await ctx.reply(text)
+        loading = "<a:loading:868755640909201448>"
+        await ctx.message.add_reaction(loading)
         url = url if url.startswith("https://") or url.startswith("http://") else f"ytsearch:{url}"
         lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(ctx.guild.id, region="ko")
         await self.bot.connect_to_voice(ctx.guild, ctx.author.voice) if not lava.is_connected else None
@@ -94,17 +103,67 @@ class Music(commands.Cog, name="음악"):
             [lava.add(requester=ctx.author.id, track=x) for x in track]
         elif track:
             lava.add(requester=ctx.author.id, track=track)
+        await ctx.message.remove_reaction(loading, ctx.me)
+        await ctx.message.add_reaction("✅")
         if not lava.is_playing:
             lava.store("channel", ctx.channel)
             return await lava.play()
+        else:
+            embed = TrackEmbed(lava.queue[-1],
+                               ctx.guild,
+                               title="유튜브 음악 재생 - 대기열에 추가됨",
+                               timestamp=self.bot.kst)
+            await ctx.reply(embed=embed, delete_after=10)
 
     @commands.command(name="스킵", description="재생중인 음악을 스킵해요.", aliases=["s", "skip", "ㄴ"])
     async def skip(self, ctx: commands.Context):
         code, text = await self.voice_check(ctx, check_connected=True, check_playing=True)
         if code:
-            return await ctx.send(text)
+            return await ctx.reply(text)
         lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         await lava.skip()
+
+    @commands.command(name="일시정지", description="음악 플레이어를 일시정지해요.", aliases=["pause", "ps", "ㅔㄴ"])
+    async def pause(self, ctx: commands.Context):
+        code, text = await self.voice_check(ctx, check_connected=True, check_playing=True)
+        if code:
+            return await ctx.reply(text)
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        await lava.set_pause(True)
+        await ctx.reply("✅ 음악 플레이어를 일시정지했어요.")
+
+    @commands.command(name="재시작", description="음악 플레이어 일시정지를 해제해요", aliases=["resume", "r", "ㄱ"])
+    async def resume(self, ctx: commands.Context):
+        code, text = await self.voice_check(ctx, check_connected=True, check_paused=True)
+        if code:
+            return await ctx.reply(text)
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        await lava.set_pause(False)
+        await ctx.reply(f"✅ 일시정지를 해제했어요.")
+
+    @commands.command(name="정지", description="음악 플레이어를 정지해요.", aliases=["stop", "ㄴ새ㅔ"])
+    async def stop(self, ctx: commands.Context):
+        code, text = await self.voice_check(ctx, check_connected=True)
+        if code:
+            return await ctx.reply(text)
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        await lava.stop()
+        await ctx.reply("✅ 음악 플레이어를 정지하고 모든 대기열을 삭제했어요. 음성 채널에서 나갈께요.")
+        await self.bot.connect_to_voice(ctx.guild)
+        await self.bot.lavalink.player_manager.destroy(ctx.guild.id)
+
+    @commands.command(name="볼륨", description="음악 플레이어의 볼륨을 조절해요.", usage="`{prefix}볼륨 (볼륨값:숫자:현재 볼륨 보기)`", aliases=["volume", "vol", "v", "패ㅣㅕㅡㄷ", "ㅍ"])
+    async def volume(self, ctx: commands.Context, vol: int = None):
+        code, text = await self.voice_check(ctx, check_connected=True, check_playing=True)
+        if code:
+            return await ctx.reply(text)
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        if vol is None:
+            return await ctx.reply(f"ℹ 현재 볼륨은 `{lava.volume}`% 에요.")
+        if not 0 < vol <= 1000:
+            return await ctx.reply("❌ 볼륨 값은 1에서 1000 사이로만 가능해요.")
+        await lava.set_volume(vol)
+        await ctx.reply(f"✅ 볼륨을 `{vol}`%로 조정했어요.")
 
 
 def setup(bot):
