@@ -74,15 +74,16 @@ class LaytheClient(commands.AutoShardedBot):
 
     async def init_all_ext(self):
         await self.wait_until_ready()
-        await self.db.login()
-        await self.cache_manager.update_cache()
-        self.db_ready = True
         self.lavalink = lavalink.Client(self.user.id)
         self.lavalink.add_node(host=self.get_setting("lavahost"),
                                port=self.get_setting("lavaport"),
                                password=self.get_setting("lavapw"),
                                region="ko")
         self.add_listener(self.lavalink.voice_update_handler, "on_socket_response")
+        await self.db.login()
+        await self.cache_manager.update_cache()
+        self.db_ready = True
+        self.logger.info("DB and cache is all ready!")
 
     async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
         yes_button = manage_components.create_button(3, "네", "⭕", f"yes{message.id}")
@@ -109,6 +110,10 @@ class LaytheClient(commands.AutoShardedBot):
             await message.clear_reactions()
         except discord.Forbidden:
             [await x.remove(self.user) for x in reactions]
+
+    async def connect_to_voice(self, guild: discord.Guild, voice: discord.VoiceState = None):
+        ws = self.shards[guild.shard_id]._parent.ws
+        await ws.voice_state(str(guild.id), voice.channel.id if voice else None)
 
     @staticmethod
     async def safe_clear_reaction(reaction: discord.Reaction, user: typing.Union[discord.User, discord.Member]):

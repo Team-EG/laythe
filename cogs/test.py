@@ -19,7 +19,7 @@ class Test(commands.Cog, name="PRIVATE_테스트"):
     @commands.command(name="커서")
     async def cursor_test(self, ctx):
         cursor = Cursor(self.bot, ctx.message, [*range(1, 10+1)], base_embed=AuthorEmbed(ctx.author, title="커서 테스트"))
-        comp_ctx, selected = await cursor.start()
+        _msg, selected = await cursor.start()
         await ctx.reply(str(selected))
 
 

@@ -41,8 +41,8 @@ class Cursor:
 
         __custom_ids = ["next", "prev", "select", "abort", "npage", "ppage"]
         if self.extra_button:
-            __custom_ids.append(self.extra_button.custom_id)
-            self.extra_button.custom_id += str(message.id)
+            __custom_ids.append(self.extra_button["custom_id"])
+            self.extra_button["custom_id"] += str(message.id)
         self.custom_ids = [x+str(message.id) for x in __custom_ids]
 
         self.current_page = 0
