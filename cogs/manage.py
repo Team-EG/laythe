@@ -125,7 +125,7 @@ class Manage(commands.Cog, name="관리"):
         embed = AuthorEmbed(user, title=f"경고 목록 - 총 {len(warns)}개", color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
         cursor = Cursor(self.bot, ctx.message, [f"경고 ID: {x['date']}" for x in warns], embed)
         _msg, resp = await cursor.start()
-        if not resp:
+        if resp is None:
             return await _msg.delete()
         warn = warns[resp]
         moderator = ctx.guild.get_member(warn["mod_id"]) or self.bot.get_user(warn["mod_id"])
