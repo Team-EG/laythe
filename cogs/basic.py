@@ -1,8 +1,7 @@
 import time
-
 import discord
 from discord.ext import commands
-from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, Cursor
+from module import LaytheClient, AuthorEmbed, EmbedColor
 
 
 class Basic(commands.Cog, name="일반"):

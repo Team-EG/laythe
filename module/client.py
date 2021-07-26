@@ -17,9 +17,11 @@ from extlib import BotList, SpellChecker
 
 class LaytheClient(commands.AutoShardedBot):
     def __init__(self, logger: logging.Logger, **kwargs):
+        intents = discord.Intents.all()
+        intents.presences = False
         super().__init__(command_prefix=self.prefix,
                          help_command=None,
-                         intents=discord.Intents.all(),
+                         intents=intents,
                          allowed_mentions=discord.AllowedMentions(everyone=False))
         self.logger = logger
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -109,6 +111,8 @@ class LaytheClient(commands.AutoShardedBot):
         await ws.voice_state(str(guild.id), voice.channel.id if voice else None)
 
     async def execute_guild_log(self, guild: discord.Guild, **kwargs):
+        if not guild:
+            return
         setting = await self.cache_manager.get_settings(guild.id, "log_channel")
         log_channel: int = setting[0]["log_channel"]
         if not log_channel:

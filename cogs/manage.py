@@ -123,7 +123,7 @@ class Manage(commands.Cog, name="관리"):
         if not warns:
             return await ctx.reply("ℹ 해당 유저의 경고 기록이 존재하지 않아요.")
         embed = AuthorEmbed(user, title=f"경고 목록 - 총 {len(warns)}개", color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
-        cursor = Cursor(self.bot, ctx.message, [f"경고 ID: {x['date']}" for x in warns], embed)
+        cursor = Cursor(self.bot, ctx.message, [f"경고 ID: `{x['date']}`" for x in warns], embed)
         _msg, resp = await cursor.start()
         if resp is None:
             return await _msg.delete()
