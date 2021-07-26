@@ -20,6 +20,13 @@ class Setting(commands.Cog, name="봇 설정"):
         embed = GuildEmbed(ctx.guild, title="Laythe 설정 정보", color=EmbedColor.DEFAULT, timestamp=ctx.message.created_at)
         embed.add_field(name="커스텀 프리픽스", value=settings["custom_prefix"] or "(없음)")
         embed.add_field(name="레벨 기능을 사용하나요?", value=to_readable_bool(LaytheSettingFlags.USE_LEVEL in flags))
+        embed.add_field(name="뮤트 역할", value=f"<@&{settings['mute_role']}>" if settings['mute_role'] else "(없음)")
+        embed.add_field(name="로그 채널", value=f"<#{settings['log_channel']}>" if settings['log_channel'] else "(없음)")
+        embed.add_field(name="환영 채널", value=f"<#{settings['welcome_channel']}>" if settings['welcome_channel'] else "(없음)")
+        embed.add_field(name="고정 채널", value=f"<#{settings['starboard_channel']}>" if settings['starboard_channel'] else "(없음)")
+        embed.add_field(name="환영 메세지", value=settings["greet"] or "(없음)")
+        embed.add_field(name="DM 환영 메세지", value=settings["greet_dm"] or "(없음)")
+        embed.add_field(name="작별 인사 메세지", value=settings["bye"] or "(없음)")
         await ctx.reply(embed=embed)
 
 
