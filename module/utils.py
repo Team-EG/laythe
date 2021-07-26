@@ -41,5 +41,6 @@ permission_translates = {
     "kick_members": "멤버 추방하기",
     "ban_members": "멤버 차단하기",
     "administrator": "관리자",
-    "manage_messages": "메시지 관리"
+    "manage_messages": "메시지 관리",
+    "manage_roles": "역할 관리하기"
 }

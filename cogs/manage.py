@@ -51,7 +51,41 @@ class Manage(commands.Cog, name="관리"):
         await ctx.channel.delete_messages(tgt_list)
         await ctx.send(f"✅ 선택한 유저가 전송한 {len(tgt_list)}개의 메세지를 정리했어요.\n`이 메세지는 5초 후 삭제돼요.`", delete_after=5)
 
-    @commands.command(name="추방", description="선택한 유저를 서버에서 추방해요.", usage="`{prefix}추방 [유저:유저 ID 또는 맨션] (사유:문장)`", aliases=["kick"])
+    @commands.command(name="뮤트",
+                      description="선택한 유저를 뮤트해요. 뮤트 역할을 먼저 등록해야 사용이 가능해요.",
+                      usage="`{prefix}뮤트 [유저:유저 ID 또는 맨션] (사유:문장:없음)`",
+                      aliases=["음소거", "mute"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def mute_user(self, ctx: commands.Context, user: discord.Member, reason: str = None):
+        setting = await self.bot.cache_manager.get_settings(ctx.guild.id, "mute_role")
+        mute_role = setting[0]["mute_role"]
+        if not mute_role:
+            return await ctx.reply("❌ 먼저 뮤트 역할을 설정에서 등록해주세요.")
+        mute_role = ctx.guild.get_role(mute_role)
+        if mute_role.id in map(lambda x: x.id, user.roles):
+            return await ctx.reply("❌ 이미 뮤트된 유저에요.")
+        await user.add_roles(mute_role, reason=reason)
+        await ctx.reply("✅ 성공적으로 해당 유저를 뮤트했어요.")
+
+    @commands.command(name="언뮤트",
+                      description="선택한 유저를 언뮤트해요. 뮤트 역할을 먼저 등록해야 사용이 가능해요.",
+                      usage="`{prefix}언뮤트 [유저:유저 ID 또는 맨션] (사유:문장:없음)`",
+                      aliases=["unmute"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def unmute_user(self, ctx: commands.Context, user: discord.Member, reason: str = None):
+        setting = await self.bot.cache_manager.get_settings(ctx.guild.id, "mute_role")
+        mute_role = setting[0]["mute_role"]
+        if not mute_role:
+            return await ctx.reply("❌ 먼저 뮤트 역할을 설정에서 등록해주세요.")
+        mute_role = ctx.guild.get_role(mute_role)
+        if mute_role.id not in map(lambda x: x.id, user.roles):
+            return await ctx.reply("❌ 뮤트되지 않은 유저에요.")
+        await user.remove_roles(mute_role, reason=reason)
+        await ctx.reply("✅ 성공적으로 해당 유저를 언뮤트했어요.")
+
+    @commands.command(name="추방", description="선택한 유저를 서버에서 추방해요.", usage="`{prefix}추방 [유저:유저 ID 또는 맨션] (사유:문장:없음)`", aliases=["kick"])
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     async def kick_member(self, ctx: commands.Context, user: discord.Member, reason: str = None):
@@ -62,7 +96,7 @@ class Manage(commands.Cog, name="관리"):
         await user.kick(reason=reason)
         await ctx.reply("✅ 성공적으로 해당 유저를 추방했어요.")
 
-    @commands.command(name="차단", description="선택한 유저를 서버에서 차단해요.", usage="`{prefix}차단 [유저:유저 ID 또는 맨션] (사유:문장)`", aliases=["ban"])
+    @commands.command(name="차단", description="선택한 유저를 서버에서 차단해요.", usage="`{prefix}차단 [유저:유저 ID 또는 맨션] (사유:문장:없음)`", aliases=["ban"])
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban_member(self, ctx: commands.Context, user: discord.Member, reason: str = None):
