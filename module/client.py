@@ -104,16 +104,24 @@ class LaytheClient(commands.AutoShardedBot):
             action_row = manage_components.create_actionrow(yes_button, no_button)
             await message.edit(components=[action_row])
 
+    async def connect_to_voice(self, guild: discord.Guild, voice: discord.VoiceState = None):
+        ws = self.shards[guild.shard_id]._parent.ws
+        await ws.voice_state(str(guild.id), voice.channel.id if voice else None)
+
+    async def execute_guild_log(self, guild: discord.Guild, **kwargs):
+        setting = await self.cache_manager.get_settings(guild.id, "log_channel")
+        log_channel: int = setting[0]["log_channel"]
+        if not log_channel:
+            return False
+        log_channel: discord.TextChannel = guild.get_channel(log_channel)
+        return await log_channel.send(**kwargs)
+
     async def safe_clear_reactions(self, message: discord.Message):
         reactions = message.reactions
         try:
             await message.clear_reactions()
         except discord.Forbidden:
             [await x.remove(self.user) for x in reactions]
-
-    async def connect_to_voice(self, guild: discord.Guild, voice: discord.VoiceState = None):
-        ws = self.shards[guild.shard_id]._parent.ws
-        await ws.voice_state(str(guild.id), voice.channel.id if voice else None)
 
     @staticmethod
     async def safe_clear_reaction(reaction: discord.Reaction, user: typing.Union[discord.User, discord.Member]):

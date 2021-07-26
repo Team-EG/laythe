@@ -1,8 +1,7 @@
 import typing
-
 import discord
 from discord.ext import commands
-from module import LaytheClient, AuthorEmbed, EmbedColor, Pager
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, GuildEmbed
 
 
 class Manage(commands.Cog, name="관리"):
@@ -55,9 +54,9 @@ class Manage(commands.Cog, name="관리"):
                       description="선택한 유저를 뮤트해요. 뮤트 역할을 먼저 등록해야 사용이 가능해요.",
                       usage="`{prefix}뮤트 [유저:유저 ID 또는 맨션] (사유:문장:없음)`",
                       aliases=["음소거", "mute"])
-    @commands.has_permissions(manage_roles=True)
+    @commands.has_permissions(manage_roles=True, manage_messages=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def mute_user(self, ctx: commands.Context, user: discord.Member, reason: str = None):
+    async def mute_user(self, ctx: commands.Context, user: discord.Member, *, reason: str = None):
         setting = await self.bot.cache_manager.get_settings(ctx.guild.id, "mute_role")
         mute_role = setting[0]["mute_role"]
         if not mute_role:
@@ -72,9 +71,9 @@ class Manage(commands.Cog, name="관리"):
                       description="선택한 유저를 언뮤트해요. 뮤트 역할을 먼저 등록해야 사용이 가능해요.",
                       usage="`{prefix}언뮤트 [유저:유저 ID 또는 맨션] (사유:문장:없음)`",
                       aliases=["unmute"])
-    @commands.has_permissions(manage_roles=True)
+    @commands.has_permissions(manage_roles=True, manage_messages=True)
     @commands.bot_has_permissions(manage_roles=True)
-    async def unmute_user(self, ctx: commands.Context, user: discord.Member, reason: str = None):
+    async def unmute_user(self, ctx: commands.Context, user: discord.Member, *, reason: str = None):
         setting = await self.bot.cache_manager.get_settings(ctx.guild.id, "mute_role")
         mute_role = setting[0]["mute_role"]
         if not mute_role:
@@ -85,10 +84,35 @@ class Manage(commands.Cog, name="관리"):
         await user.remove_roles(mute_role, reason=reason)
         await ctx.reply("✅ 성공적으로 해당 유저를 언뮤트했어요.")
 
+    @commands.group(name="경고", description="경고 관련 명령어에요.", usage="`{prefix}경고` 명령어를 참고해주세요.")
+    async def warn_user(self, ctx: commands.Context):
+        if ctx.invoked_subcommand:
+            return
+        embed = AuthorEmbed(ctx.author, title="경고 명령어 도움말", color=EmbedColor.DEFAULT)
+        embed.add_field(name=f"{ctx.prefix}경고 추가 [유저:유저 ID 또는 맨션] (사유:문장:없음)", value="선택한 유저에게 경고를 부여해요.", inline=False)
+        embed.add_field(name=f"{ctx.prefix}경고 삭제 [유저:유저 ID 또는 맨션] [경고 ID:숫자(경고 ID)]", value="선택한 경고를 삭제해요.", inline=False)
+        embed.add_field(name=f"{ctx.prefix}경고 목록 (유저:유저 ID 또는 맨션:명령어 사용자)", value="선택한 유저의 경고 목록을 보여줘요.", inline=False)
+        embed.add_field(name=f"{ctx.prefix}경고 보기 [유저:유저 ID 또는 맨션] [경고 ID:숫자(경고 ID)]", value="선택한 경고를 보여줘요.", inline=False)
+        await ctx.reply(embed=embed)
+
+    @warn_user.command(name="추가")
+    @commands.has_permissions(ban_members=True)
+    async def warn_user_add(self, ctx: commands.Context, user: discord.Member, *, reason: str = None):
+        now = round(ctx.message.created_at.timestamp())
+        reason = reason or "없음"
+        await self.bot.db.execute("""INSERT INTO warns VALUES (%s, %s, %s, %s, %s)""", (ctx.guild.id, now, user.id, ctx.author.id, reason))
+        embed = GuildEmbed(ctx.guild, title=f"유저 경고 추가", timestamp=ctx.message.created_at, color=EmbedColor.NEGATIVE)
+        embed.add_field(name="경고 대상", value=f"{user.mention} (`{user}` (ID: `{user.id}`))", inline=False)
+        embed.add_field(name="경고를 추가한 관리자", value=f"{ctx.author.mention} (`{ctx.author}` (ID: `{ctx.author.id}`))", inline=False)
+        embed.add_field(name="경고 ID", value=f"`{now}`", inline=False)
+        embed.add_field(name="경고 사유", value=reason, inline=False)
+        await self.bot.execute_guild_log(ctx.guild, embed=embed)
+        await ctx.reply("✅ 성공적으로 경고를 추가했어요. 자세한 내용은 다음을 참고해주세요.", embed=embed)
+
     @commands.command(name="추방", description="선택한 유저를 서버에서 추방해요.", usage="`{prefix}추방 [유저:유저 ID 또는 맨션] (사유:문장:없음)`", aliases=["kick"])
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
-    async def kick_member(self, ctx: commands.Context, user: discord.Member, reason: str = None):
+    async def kick_member(self, ctx: commands.Context, user: discord.Member, *, reason: str = None):
         try:
             await user.send(f"`{user.guild.name}`에서 추방되었어요.\n사유: {reason or '없음'}")
         except (discord.Forbidden, discord.HTTPException):
@@ -99,7 +123,7 @@ class Manage(commands.Cog, name="관리"):
     @commands.command(name="차단", description="선택한 유저를 서버에서 차단해요.", usage="`{prefix}차단 [유저:유저 ID 또는 맨션] (사유:문장:없음)`", aliases=["ban"])
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def ban_member(self, ctx: commands.Context, user: discord.Member, reason: str = None):
+    async def ban_member(self, ctx: commands.Context, user: discord.Member, *, reason: str = None):
         try:
             await user.send(f"`{user.guild.name}`에서 차단되었어요.\n사유: {reason or '없음'}")
         except (discord.Forbidden, discord.HTTPException):
