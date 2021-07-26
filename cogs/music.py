@@ -201,11 +201,11 @@ class Music(commands.Cog, name="음악"):
         front_embed.add_field(name="대기중인 음악 개수", value=f"{len(lava.queue)}개")
         front_embed.set_footer(text=''.join(base) + f" | {cpos} / {vid}")
         if lava.paused:
-            front_embed.add_field(name="플레이어 상태", value="현재 일시정지 중이에요.", inline=False)
+            front_embed.add_field(name="플레이어 상태", value="⏸ 현재 일시정지 중이에요.", inline=False)
         elif lava.repeat:
-            front_embed.add_field(name="플레이어 상태", value="반복 재생 기능이 켜져있어요.", inline=False)
+            front_embed.add_field(name="플레이어 상태", value="🔂 반복 재생 기능이 켜져있어요.", inline=False)
         elif lava.shuffle:
-            front_embed.add_field(name="플레이어 상태", value="랜덤 재생 기능이 켜져있어요.", inline=False)
+            front_embed.add_field(name="플레이어 상태", value="🔀 랜덤 재생 기능이 켜져있어요.", inline=False)
         if len(lava.queue) == 0:
             return await ctx.send(embed=front_embed)
         pages = [front_embed]

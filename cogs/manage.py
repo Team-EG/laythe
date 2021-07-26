@@ -1,7 +1,8 @@
+import datetime
 import typing
 import discord
 from discord.ext import commands
-from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, GuildEmbed
+from module import LaytheClient, AuthorEmbed, EmbedColor, Pager, GuildEmbed, Cursor
 
 
 class Manage(commands.Cog, name="관리"):
@@ -92,7 +93,7 @@ class Manage(commands.Cog, name="관리"):
         embed.add_field(name=f"{ctx.prefix}경고 추가 [유저:유저 ID 또는 맨션] (사유:문장:없음)", value="선택한 유저에게 경고를 부여해요.", inline=False)
         embed.add_field(name=f"{ctx.prefix}경고 삭제 [유저:유저 ID 또는 맨션] [경고 ID:숫자(경고 ID)]", value="선택한 경고를 삭제해요.", inline=False)
         embed.add_field(name=f"{ctx.prefix}경고 목록 (유저:유저 ID 또는 맨션:명령어 사용자)", value="선택한 유저의 경고 목록을 보여줘요.", inline=False)
-        embed.add_field(name=f"{ctx.prefix}경고 보기 [유저:유저 ID 또는 맨션] [경고 ID:숫자(경고 ID)]", value="선택한 경고를 보여줘요.", inline=False)
+        # embed.add_field(name=f"{ctx.prefix}경고 보기 [유저:유저 ID 또는 맨션] [경고 ID:숫자(경고 ID)]", value="선택한 경고를 보여줘요.", inline=False)
         await ctx.reply(embed=embed)
 
     @warn_user.command(name="추가")
@@ -108,6 +109,34 @@ class Manage(commands.Cog, name="관리"):
         embed.add_field(name="경고 사유", value=reason, inline=False)
         await self.bot.execute_guild_log(ctx.guild, embed=embed)
         await ctx.reply("✅ 성공적으로 경고를 추가했어요. 자세한 내용은 다음을 참고해주세요.", embed=embed)
+
+    @warn_user.command(name="삭제")
+    @commands.has_permissions(ban_members=True)
+    async def warn_user_remove(self, ctx: commands.Context, user: discord.Member, warn_id: int):
+        await self.bot.db.execute("""DELETE FROM warns WHERE guild_id=%s AND user_id=%s AND date=%s""", (ctx.guild.id, user.id, warn_id))
+        await ctx.reply("✅ 해당 경고를 삭제했어요. 경고 삭제 명령어의 작동 특성으로 잘못된 경고 ID일 경우에도 해당 메세지가 전송되지만 경고가 삭제되지 않으므로 주의하세요.")
+
+    @warn_user.command(name="목록")
+    async def warn_user_list(self, ctx: commands.Context, user: discord.Member = None):
+        user = user or ctx.author
+        warns = await self.bot.db.fetch("""SELECT * FROM warns WHERE guild_id=%s AND user_id=%s""", (ctx.guild.id, user.id))
+        if not warns:
+            return await ctx.reply("ℹ 해당 유저의 경고 기록이 존재하지 않아요.")
+        embed = AuthorEmbed(user, title=f"경고 목록 - 총 {len(warns)}개", color=EmbedColor.NEGATIVE, timestamp=ctx.message.created_at)
+        cursor = Cursor(self.bot, ctx.message, [f"경고 ID: {x['date']}" for x in warns], embed)
+        _msg, resp = await cursor.start()
+        if not resp:
+            return await _msg.delete()
+        warn = warns[resp]
+        moderator = ctx.guild.get_member(warn["mod_id"]) or self.bot.get_user(warn["mod_id"])
+        resp = AuthorEmbed(user, title=f"경고 정보 - #{warn['date']}", color=EmbedColor.NEGATIVE, timestamp=datetime.datetime.fromtimestamp(warn['date']))
+        resp.add_field(name="경고 대상", value=f"{user.mention} (`{user}` (ID: `{user.id}`))", inline=False)
+        resp.add_field(name="경고를 추가한 관리자",
+                       value=f"{moderator.mention} (`{moderator}` (ID: `{moderator.id}`))" if moderator else f"⚠ 관리자를 못 찾았어요. (관리자 ID: {warn['mod_id']})",
+                       inline=False)
+        resp.add_field(name="경고 ID", value=f"`{warn['date']}`", inline=False)
+        resp.add_field(name="경고 사유", value=warn['reason'], inline=False)
+        await _msg.edit(embed=resp, components=[])
 
     @commands.command(name="추방", description="선택한 유저를 서버에서 추방해요.", usage="`{prefix}추방 [유저:유저 ID 또는 맨션] (사유:문장:없음)`", aliases=["kick"])
     @commands.has_permissions(kick_members=True)
