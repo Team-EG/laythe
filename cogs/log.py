@@ -17,11 +17,11 @@ class Log(commands.Cog, name="로깅"):
         if message.author.bot:
             return
         embed = AuthorEmbed(message.author,
-                            title=f"메세지 삭제",
+                            title=f"메시지 삭제",
                             description=message.content or "(메시지 내용 없음)",
                             color=EmbedColor.NEGATIVE,
                             timestamp=self.bot.kst)
-        embed.set_footer(text=f"메세지 ID: {message.id}\n작성자 ID: {message.author.id}")
+        embed.set_footer(text=f"메시지 ID: {message.id}\n작성자 ID: {message.author.id}")
         if message.attachments:
             files = [x.url for x in message.attachments]
             extra_msg = '\n'.join(files)

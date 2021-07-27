@@ -24,9 +24,9 @@ class Setting(commands.Cog, name="봇 설정"):
         embed.add_field(name="로그 채널", value=f"<#{settings['log_channel']}>" if settings['log_channel'] else "(없음)")
         embed.add_field(name="환영 채널", value=f"<#{settings['welcome_channel']}>" if settings['welcome_channel'] else "(없음)")
         embed.add_field(name="고정 채널", value=f"<#{settings['starboard_channel']}>" if settings['starboard_channel'] else "(없음)")
-        embed.add_field(name="환영 메세지", value=settings["greet"] or "(없음)")
-        embed.add_field(name="DM 환영 메세지", value=settings["greet_dm"] or "(없음)")
-        embed.add_field(name="작별 인사 메세지", value=settings["bye"] or "(없음)")
+        embed.add_field(name="환영 메시지", value=settings["greet"] or "(없음)")
+        embed.add_field(name="DM 환영 메시지", value=settings["greet_dm"] or "(없음)")
+        embed.add_field(name="작별 인사 메시지", value=settings["bye"] or "(없음)")
         await ctx.reply(embed=embed)
 
 
