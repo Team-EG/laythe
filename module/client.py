@@ -53,7 +53,7 @@ class LaytheClient(commands.AutoShardedBot):
         return self.get_setting("debug")
 
     async def prefix(self, bot, message):
-        prefixes = ["레이테 ", "laythe ", "Laythe", "l!", "L!", "ㅣ!"]
+        prefixes = ["레이테 ", "laythe ", "Laythe ", "l!", "L!", "ㅣ!"]
         if not isinstance(message.channel, discord.TextChannel):
             return commands.when_mentioned_or(*prefixes)(bot, message)
         # bot_settings = await self.db.fetch("SELECT custom_prefix FROM settings WHERE guild_id=%s", (message.guild.id,))
