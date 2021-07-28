@@ -32,7 +32,7 @@ class Manage(commands.Cog, name="관리"):
         embed.add_field(name=f"{ctx.prefix}정리 유저 [유저:유저 ID 또는 맨션] [탐색 범위:숫자]", value="선택한 유저가 보낸 메시지들을 제한 범위까지 탐색 후 삭제해요.", inline=False)
         await ctx.reply(embed=embed)
 
-    @purge.command(name="메시지", alias=["메시지"])
+    @purge.command(name="메시지", alias=["메세지"])
     async def purge_message(self, ctx: commands.Context, message: discord.Message):
         tgt_list = [message]
         async for m in ctx.channel.history(after=message):
