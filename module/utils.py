@@ -99,3 +99,27 @@ rtc_region_translates = {
     "vip_us_east": "VIP 미국 동부",
     "vip_us_west": "VIP 미국 서부"
 }
+
+
+verification_level_translates = {
+    "none": "없음",
+    "low": "낮음",
+    "medium": "중간",
+    "high": "높음",
+    "extreme": "매우 높음",
+    "table_flip": "높음",
+    "double_table_flip": "매우 높음",
+    "very_high": "매우 높음",
+}
+
+
+verification_desc_translates = {
+    "none": "제한 없음",
+    "low": "이메일 인증이 완료된 Discord 계정이어야 해요.",
+    "medium": "또한, Discord에 가입한 지 5분이 지나야 돼요.",
+    "high": "또한, 이 서버의 멤버가 된 지 10분이 지나야 돼요.",
+    "extreme": "휴대폰 인증이 완료된 Discord 계정이어야 해요.",
+    "table_flip": "또한, 이 서버의 멤버가 된 지 10분이 지나야 돼요.",
+    "double_table_flip": "휴대폰 인증이 완료된 Discord 계정이어야 해요.",
+    "very_high": "휴대폰 인증이 완료된 Discord 계정이어야 해요.",
+}
