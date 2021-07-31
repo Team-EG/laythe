@@ -209,8 +209,6 @@ class Log(commands.Cog, name="로깅"):
             embed.add_field(name="이름", value=f"`{before.name}` -> `{after.name}`", inline=False)
         if before.color != after.color:
             embed.add_field(name="색상", value=f"{before.color} -> {after.color}", inline=False)
-        if before.position != after.position:
-            embed.add_field(name="위치", value=f"`{before.position}`번째 -> `{after.position}`번째", inline=False)
 
         before_perms = dict(before.permissions)
         after_perms = dict(after.permissions)
@@ -220,8 +218,12 @@ class Log(commands.Cog, name="로깅"):
                                              for k, v in before_perms.items() if v != after_perms[k]]),
                             inline=False)
         embed.set_footer(text=f"역할 ID: {after.id}")
+
         if not embed.fields:
             return
+
+        if before.position != after.position:  # Prevent spam.
+            embed.add_field(name="위치", value=f"`{before.position}`번째 -> `{after.position}`번째", inline=False)
         await self.bot.execute_guild_log(after.guild, embed=embed)
 
     @commands.Cog.listener()

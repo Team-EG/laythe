@@ -58,6 +58,7 @@ class Utils(commands.Cog, name="유틸리티"):
         uptime_sys = (datetime.datetime.now() - datetime.datetime.fromtimestamp(psutil.boot_time())).total_seconds()
         uptime_bot = (datetime.datetime.now() - datetime.datetime.fromtimestamp(process.create_time())).total_seconds()
         memory = psutil.virtual_memory()
+        node = self.bot.lavalink.node_manager.nodes[0].stats
         embed = AuthorEmbed(ctx.author,
                             title="레이테 정보",
                             description="Developed and maintained by [Team EG](https://discord.gg/gqJBhar).",
@@ -72,6 +73,9 @@ class Utils(commands.Cog, name="유틸리티"):
                         inline=False)
         embed.add_field(name="업타임", value=f"서버: {utils.parse_second(round(uptime_sys))} | 봇: {utils.parse_second(round(uptime_bot))}", inline=False)
         embed.add_field(name="레이테 서버 정보", value=f"CPU `{psutil.cpu_percent()}`% 사용중\n램 `{memory.percent}`% 사용중", inline=False)
+        embed.add_field(name="Lavalink 정보",
+                        value=f"총 `{node.players}`개 노드 (`{node.playing_players}`개 노드에서 재생중)\n노드 부하: `{round(node.lavalink_load*100)}`%",
+                        inline=False)
         await ctx.reply(embed=embed)
 
 
