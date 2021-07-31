@@ -32,7 +32,9 @@ class Music(commands.Cog, name="음악"):
                                title="유튜브 음악 재생 - 재생 시작",
                                timestamp=self.bot.kst)
             channel = event.player.fetch("channel")
-            await channel.send(embed=embed, delete_after=10)
+            silent = event.player.fetch("silent")
+            if not silent:
+                await channel.send(embed=embed, delete_after=10)
 
     async def voice_check(self, ctx: commands.Context, *, check_connected: bool = False, check_playing: bool = False, check_paused: bool = False) -> tuple:
         voice: discord.VoiceState = ctx.author.voice
@@ -109,6 +111,7 @@ class Music(commands.Cog, name="음악"):
         await ctx.message.add_reaction("✅")
         if not lava.is_playing:
             lava.store("channel", ctx.channel)
+            lava.store("silent", False)
             return await lava.play()
         else:
             embed = TrackEmbed(lava.queue[-1],
@@ -175,6 +178,15 @@ class Music(commands.Cog, name="음악"):
         lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         lava.set_repeat(not lava.repeat)
         await ctx.send(f"✅ 반복 재생 기능이 {'켜졌어요!' if lava.repeat else '꺼졌어요.'}")
+
+    @commands.command(name="사일렌트", description="음악 재생시 채널에 음악 재생 시작 메세지를 보낼지 결정해요.", aliases=["silent"])
+    async def silent_mode(self, ctx: commands.Context):
+        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        if not lava:
+            return await ctx.reply("❌ 먼저 아무 노래나 재생해주세요.")
+        silent = lava.fetch("silent", False)
+        lava.store("silent", not silent)
+        await ctx.send(f"✅ 사일렌트 모드가 {'켜졌어요!' if not silent else '꺼졌어요.'}")
 
     @commands.command(name="대기열", description="현재 음악 대기열을 보여줘요.", aliases=["대기리스트", "ql", "pl", "np", "queuelist", "playlist", "비", "ㅔㅣ"])
     async def queue_list(self, ctx: commands.Context):

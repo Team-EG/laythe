@@ -17,7 +17,7 @@ class Pager:
                  channel: typing.Union[discord.TextChannel, discord.DMChannel],
                  author: discord.Member,
                  pages: typing.List[typing.Union[str, discord.Embed]],
-                 custom_emojis: list = None,
+                 extra_button: dict = None,
                  *, is_embed: bool = False,
                  reply: discord.Message = None,
                  timeout: int = 30):
@@ -25,13 +25,12 @@ class Pager:
         self.channel = channel
         self.author = author
         self.pages = pages
-        self.custom_emojis = custom_emojis or []
+        self.extra_button = extra_button
         self.is_embed = is_embed
         self.reply = reply
         self.timeout = timeout
         self.current = 0
         self.message = None  # Should be set later.
-        self.full_emoji_list = self.emoji_list.copy() + self.custom_emojis.copy()
 
     @property
     def __max_page(self):
@@ -49,26 +48,24 @@ class Pager:
         self.current = self.current - 1 if self.current - 1 >= 0 else self.__max_page
         return self.pages[self.current]
 
-    def start(self, as_generator: bool = False):
-        if as_generator:
-            return self.__start
-        else:
-            return self.start_flatten
-
     async def start_flatten(self):
         return_list = []
-        async for x in self.__start():
+        async for x in self.start():
             return_list.append(x)
         return return_list
 
-    async def __start(self):
+    async def start(self):
         func = self.channel.send if not self.reply else self.reply.reply
         self.message = await func(content=self.pages[0] if not self.is_embed else None, embed=self.pages[0] if self.is_embed else None)
 
         next_button = manage_components.create_button(style=1, label="다음", custom_id=f"next{self.message.id}", emoji=self.next_emoji)
         prev_button = manage_components.create_button(style=1, label="이전", custom_id=f"prev{self.message.id}", emoji=self.prev_emoji)
         stop_button = manage_components.create_button(style=2, custom_id=f"stop{self.message.id}", emoji=self.stop_emoji)
-        action_row = manage_components.create_actionrow(prev_button, stop_button, next_button)
+        buttons = [prev_button, stop_button, next_button]
+        if self.extra_button:
+            self.extra_button["custom_id"] += str(self.message.id)
+            buttons.append(self.extra_button)
+        action_row = manage_components.create_actionrow(*buttons)
 
         await self.message.edit(components=[action_row])
 
@@ -85,7 +82,7 @@ class Pager:
                 await ctx.defer(edit_origin=True)
 
                 if ctx.custom_id.startswith("stop"):
-                    yield self.current_page
+                    # yield self.current_page
                     break
 
                 elif ctx.custom_id.startswith("next"):
@@ -98,8 +95,11 @@ class Pager:
                     await self.message.edit(content=page if not self.is_embed else None,
                                             embed=page if self.is_embed else None)
 
+                else:
+                    yield self.current_page
+
             except asyncio.TimeoutError:
-                yield self.current_page
+                # yield self.current_page
                 break
 
         next_button = manage_components.create_button(style=1, label="다음", custom_id=f"next{self.message.id}", emoji=self.next_emoji, disabled=True)
