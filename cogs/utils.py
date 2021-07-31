@@ -6,8 +6,6 @@ import psutil
 from discord.ext import commands
 from module import LaytheClient, AuthorEmbed, EmbedColor, utils
 
-import typing
-
 
 class Utils(commands.Cog, name="유틸리티"):
     def __init__(self, bot: LaytheClient):

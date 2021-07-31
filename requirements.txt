@@ -4,4 +4,5 @@ lavalink
 psutil
 aiohttp
 aiosqlite
+aiomysql
 requests
