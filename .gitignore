@@ -5,3 +5,5 @@ config.json
 traceback
 extlib
 external_api
+dummy.json
+test.py
