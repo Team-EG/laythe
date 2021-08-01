@@ -34,6 +34,9 @@ class Error(commands.Cog):
         elif isinstance(error, commands.BotMissingPermissions):
             base.title += "이 서버에서 제 권한이 이 명령어를 실행하기에는 부족해요."
             base.description = f"`{'`, `'.join([permission_translates.get(x, x) for x in error.missing_perms])}` 권한을 저에게 부여해주세요."
+        elif isinstance(error, commands.MissingPermissions):
+            base.title += "빠진 필수 항목이 있어요."
+            base.description = "해당 명령어의 정확한 사용법은 도움말 명령어를 다시 확인해보세요."
         else:
             base.title += "예기치 못한 오류가 발생했어요..."
             base.description = f"디버깅용 메시지: ```py\n{edited_tb}\n```"
@@ -52,7 +55,7 @@ class Error(commands.Cog):
                 fname = f"traceback/{str(time.time()).split('.')[0]}.txt"
                 with open(fname, "w", encoding="UTF-8") as f:
                     f.write(debug_format)
-                await self.bot.get_channel(696562545489870861).send(f"새로운 오류가 저장되었습니다. (`{fname}`)")
+                await self.bot.get_channel(764359951266480189).send(f"새로운 오류가 저장되었습니다. (`{fname}`)")
                 await msg.reply("성공적으로 오류 메시지를 전송했어요!")
             else:
                 await msg.reply("전송을 취소했어요.")
