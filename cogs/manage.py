@@ -160,6 +160,37 @@ class Manage(commands.Cog, name="관리"):
         await user.ban(reason=reason)
         await ctx.reply("✅ 성공적으로 해당 유저를 차단했어요.")
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        settings = await self.bot.cache_manager.get_settings(member.guild.id, "welcome_channel", "greet", "greet_dm")
+        if not settings:
+            return
+        settings = settings[0]
+        if not settings["welcome_channel"]:
+            return
+        welcome_channel = member.guild.get_channel(settings["welcome_channel"])
+        if not welcome_channel:
+            return
+        if settings["greet"]:
+            await welcome_channel.send(settings["greet"].format(mention=member.mention))
+        if settings["greet_dm"]:
+            await member.send(f"> `{member.guild}`에서 자동으로 전송한 환영 메세지에요."
+                              f"\n{settings['greet_dm'].format(name=member.name)}")
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        settings = await self.bot.cache_manager.get_settings(member.guild.id, "welcome_channel", "bye")
+        if not settings:
+            return
+        settings = settings[0]
+        if not settings["welcome_channel"]:
+            return
+        welcome_channel = member.guild.get_channel(settings["welcome_channel"])
+        if not welcome_channel:
+            return
+        if settings["bye"]:
+            await welcome_channel.send(settings["bye"].format(name=member.name))
+
 
 def setup(bot):
     bot.add_cog(Manage(bot))
