@@ -9,6 +9,15 @@ class Manage(commands.Cog, name="관리"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 
+    async def cog_after_invoke(self, ctx: commands.Context):
+        if ctx.command.name == "경고" and not ctx.invoked_subcommand:
+            return
+        elif ctx.invoked_subcommand and isinstance(ctx.command, commands.Group):
+            return
+        embed = AuthorEmbed(ctx.author, title="관리 명령어 실행", description=f"[{ctx.message.content}]({ctx.message.jump_url})", color=EmbedColor.NEUTRAL, timestamp=ctx.message.created_at)
+        embed.set_footer(text=f"메시지 ID: {ctx.message.id}\n관리자 ID: {ctx.author.id}")
+        await self.bot.execute_guild_log(ctx.guild, embed=embed)
+
     @commands.group(name="정리", description="메시지를 대량으로 삭제해요.", aliases=["purge"], usage="`{prefix}정리 도움` 명령어를 참고해주세요.")
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)

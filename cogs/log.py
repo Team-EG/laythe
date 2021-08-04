@@ -235,7 +235,7 @@ class Log(commands.Cog, name="로깅"):
             embed.add_field(name="제거된 이모지", value=', '.join([f"`{x.name}`" for x in deleted]), inline=False)
         added = [x for x in after if x not in before]
         if added:
-            embed.add_field(name="추가된 이모지", value=', '.join([f"{x.mention} (`{x.name}`)" for x in added]), inline=False)
+            embed.add_field(name="추가된 이모지", value=', '.join([f"{x} (`{x.name}`)" for x in added]), inline=False)
         if not embed.fields:
             return
         await self.bot.execute_guild_log(guild, embed=embed)

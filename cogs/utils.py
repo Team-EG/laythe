@@ -4,6 +4,7 @@ import discord
 import discord_slash
 import psutil
 from discord.ext import commands
+from discord_slash.utils import manage_components
 from module import LaytheClient, AuthorEmbed, EmbedColor, utils, GuildEmbed
 from module.utils import rtc_region_translates, verification_level_translates, verification_desc_translates
 
@@ -100,7 +101,11 @@ class Utils(commands.Cog, name="유틸리티"):
         embed.add_field(name="Lavalink 정보",
                         value=f"총 `{node.players}`개 노드 (`{node.playing_players}`개 노드에서 재생중)\n노드 부하: `{round(node.lavalink_load*100)}`%",
                         inline=False)
-        await ctx.reply(embed=embed)
+        github_emoji = self.bot.get_emoji(872322613987389441)
+        team_eg = manage_components.create_button(style=5, label="Team EG Web", url="https://team-eg.github.io/")
+        github = manage_components.create_button(style=5, label="GitHub", emoji=github_emoji, url="https://github.com/Team-EG/laythe")
+        row = manage_components.create_actionrow(team_eg, github)
+        await ctx.reply(embed=embed, components=[row])
 
 
 def setup(bot):
