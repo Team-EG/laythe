@@ -34,9 +34,12 @@ class Error(commands.Cog):
         elif isinstance(error, commands.BotMissingPermissions):
             base.title += "이 서버에서 제 권한이 이 명령어를 실행하기에는 부족해요."
             base.description = f"`{'`, `'.join([permission_translates.get(x, x) for x in error.missing_perms])}` 권한을 저에게 부여해주세요."
-        elif isinstance(error, commands.MissingPermissions):
+        elif isinstance(error, commands.MissingRequiredArgument):
             base.title += "빠진 필수 항목이 있어요."
             base.description = "해당 명령어의 정확한 사용법은 도움말 명령어를 다시 확인해보세요."
+        elif isinstance(error, commands.BadArgument):
+            base.title += "잘못된 형식이에요."
+            base.description = "일부 항목의 값이 형식에 맞지 않거나 유저 또는 역할 등 디스코드 관련일 경우 존재하지 않는 것 같아요. 값을 다시 확인해주세요."
         else:
             base.title += "예기치 못한 오류가 발생했어요..."
             base.description = f"디버깅용 메시지: ```py\n{edited_tb}\n```"
