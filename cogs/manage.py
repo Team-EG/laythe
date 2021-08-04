@@ -182,7 +182,7 @@ class Manage(commands.Cog, name="관리"):
             return
         if settings["greet"]:
             await welcome_channel.send(settings["greet"].format(mention=member.mention))
-        if settings["greet_dm"]:
+        if settings["greet_dm"] and not member.bot:
             await member.send(f"> `{member.guild}`에서 자동으로 전송한 환영 메세지에요."
                               f"\n{settings['greet_dm'].format(name=member.name)}")
 

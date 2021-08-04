@@ -273,9 +273,16 @@ class Log(commands.Cog, name="로깅"):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        embed = GuildEmbed(member.guild, title="새로운 멤버", description=member.mention + f" ({member})", colour=EmbedColor.POSITIVE, timestamp=self.bot.kst)
+        embed = GuildEmbed(member.guild, title="새로운 멤버", description=member.mention + f" (`{member}`)", colour=EmbedColor.POSITIVE, timestamp=self.bot.kst)
         embed.set_thumbnail(url=member.avatar_url)
         embed.set_footer(text=f"유저 ID: {member.id}")
+        if member.bot and member.guild.me.guild_permissions.view_audit_log:
+            async for x in member.guild.audit_logs(action=discord.AuditLogAction.bot_add, limit=10):  # Let's not go too deep.
+                if x.target.id == member.id:
+                    embed.title = "새로운 봇 추가"
+                    embed.add_field(name="봇 추가자", value=x.user.mention + f" (`{x.user}`)", inline=False)
+                    embed._footer["text"] += f"\n관리자 ID: {x.user.id}"
+                    break
         await self.bot.execute_guild_log(member.guild, embed=embed)
 
     @commands.Cog.listener()
