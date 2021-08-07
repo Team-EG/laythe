@@ -115,7 +115,6 @@ class Level(commands.Cog, name="레벨"):
         if not cached:
             await self.bot.cache.exec_sql("""INSERT INTO level_cache VALUES(?, ?, ?)""",  # noqa
                                           (message.guild.id, message.author.id, time_now))
-            return
         elif cached[0]["last_message_timestamp"]+60 > time_now:
             return
         await self.bot.cache.exec_sql("""UPDATE level_cache SET last_message_timestamp=? WHERE guild_id=? AND user_id=?""",  # noqa
@@ -126,14 +125,28 @@ class Level(commands.Cog, name="레벨"):
             await self.bot.db.execute("""INSERT INTO levels(guild_id, user_id) VALUES(%s, %s)""", (message.guild.id, message.author.id))
         exp = current[0]["exp"] if current else 0
         level = current[0]["level"] if current else 0
+        level_up = False
 
         exp += random.randint(5, 25)
         required_exp = self.calc_exp_required(level+1)
         if required_exp < exp:
             level += 1
+            level_up = True
             await message.channel.send(f"🎉 {message.author.mention}님의 레벨이 올라갔어요! (`{level-1}` -> `{level}`)")
         await self.bot.db.execute("""UPDATE levels SET exp=%s, level=%s WHERE guild_id=%s AND user_id=%s""",
                                   (exp, level, message.guild.id, message.author.id))
+        if level_up:
+            settings = (await self.bot.cache_manager.get_settings(message.guild.id, "reward_roles"))[0]
+            if not settings["reward_roles"]:
+                return
+            reward_roles = json.loads(settings["reward_roles"])
+            for k, v in sorted(reward_roles.items(), key=lambda n: n[0]):
+                if level >= int(k):
+                    tgt_role = message.guild.get_role(v)
+                    if tgt_role:
+                        await message.author.add_roles(tgt_role)
+                else:
+                    break
 
 
 def setup(bot):

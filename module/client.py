@@ -137,7 +137,7 @@ class LaytheClient(commands.AutoShardedBot):
 
     async def close(self):
         for x in self.lavalink.node_manager.nodes:
-            await self.lavalink.node_manager.remove_node(x)
+            self.lavalink.node_manager.remove_node(x)
         await self.db.close()
         await self.cache.close()
         await self.session.close()

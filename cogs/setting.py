@@ -1,5 +1,6 @@
 import asyncio
-
+import json
+import math
 import discord
 from discord.ext import commands
 from discord_slash.utils import manage_components
@@ -21,6 +22,8 @@ class Setting(commands.Cog, name="봇 설정"):
             return await ctx.reply("이런! 아직 레이테 설정을 사용할 수 없는 것 같아요... 최대 5분정도 기다린 뒤에 재시도해주세요.")
         settings = settings[0]
         flags = to_setting_flags(settings["flags"])
+        reward_roles = json.loads(settings["reward_roles"] or "{}")
+        reward_roles = {k: v for k, v in sorted(reward_roles.items(), key=lambda n: n[0])}
         embed = GuildEmbed(ctx.guild,
                            title="Laythe 설정 정보",
                            description=f"설정 변경은 `{ctx.prefix}설정 변경` 명령어로 할 수 있어요.",
@@ -35,7 +38,29 @@ class Setting(commands.Cog, name="봇 설정"):
         embed.add_field(name="환영 메시지", value=settings["greet"] or "(없음)")
         embed.add_field(name="DM 환영 메시지", value=settings["greet_dm"] or "(없음)")
         embed.add_field(name="작별 인사 메시지", value=settings["bye"] or "(없음)")
-        await ctx.reply(embed=embed)
+        if not reward_roles:
+            return await ctx.reply(embed=embed)
+        pages = [embed]
+        reward_embed = GuildEmbed(ctx.guild,
+                                  title="레벨 리워드 역할",
+                                  description=f"레벨 리워드 변경은 `{ctx.prefix}설정 변경` 명령어로 할 수 있어요.",
+                                  color=EmbedColor.DEFAULT,
+                                  timestamp=ctx.message.created_at)
+        tgt = reward_embed.copy()
+        current_page = 1
+        max_page = math.ceil(len(reward_roles) / 5)
+        tgt.set_footer(text=f"레벨 리워드 페이지 {current_page}/{max_page}")
+        for i, x in enumerate(reward_roles):
+            if i > 0 and (i+1) % 5 == 1:
+                pages.append(tgt)
+                tgt = reward_embed.copy()
+                current_page += 1
+                tgt.set_footer(text=f"레벨 리워드 페이지 {current_page}/{max_page}")
+            role_id = reward_roles[x]
+            tgt.add_field(name=f"레벨 {x}", value=f"<@&{role_id}>", inline=False)
+        pages.append(tgt)
+        pager = Pager(self.bot, ctx.channel, ctx.author, pages, is_embed=True, reply=ctx.message)
+        await pager.start_flatten()
 
     @laythe_setting.command(name="변경")
     async def laythe_setting_update(self, ctx: commands.Context):
@@ -59,6 +84,8 @@ class Setting(commands.Cog, name="봇 설정"):
             label="DM 환영 메시지", value="greet_dm"
         ), manage_components.create_select_option(
             label="작별 인사 메시지", value="bye"
+        ), manage_components.create_select_option(
+            label="레벨 리워드 역할", value="reward_roles"
         ), manage_components.create_select_option(
             label="종료", value="exit"
         )]
@@ -178,6 +205,60 @@ class Setting(commands.Cog, name="봇 설정"):
                             await msg.edit(content=f"❌ 존재하지 않는 역할이거나 잘못된 입력이에요. {name} 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
                     except asyncio.TimeoutError:
                         await msg.edit(content=f"❌ {name} 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
+
+                elif sel == "reward_roles":
+                    if not wait_list.get("reward_roles"):
+                        wait_list["reward_roles"] = settings["reward_roles"] or "{}"
+                    waiting = json.loads(wait_list["reward_roles"])
+                    msg = await init_msg.reply("30초 안에 설정하고 싶으신 레벨을 입력해주세요. 입력은 정수로만 해주세요.\n레벨 리워드 설정을 취소하고 싶으시다면 `취소` 라고 입력주세요.")
+                    try:
+                        _msg = await self.bot.wait_for("message",
+                                                       check=lambda m: m.channel.id == ctx.channel.id and m.author.id == ctx.author.id,
+                                                       timeout=30)
+                        if _msg.content == "취소":
+                            await msg.edit(content=f"ℹ 레벨 리워드 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
+                            continue
+                        level = int(_msg.content)
+                        if level < 1:
+                            raise ValueError
+                    except ValueError:
+                        await msg.edit(content=f"❌ 잘못된 입력이에요. 레벨 리워드 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
+                        continue
+                    except asyncio.TimeoutError:
+                        await msg.edit(content=f"❌ 레벨 리워드 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
+                        continue
+                    level = str(level)
+                    mention_role = f"<@&{waiting[level]}>" if level in waiting else ""
+                    await msg.edit(content=f"30초 안에 레벨 {level}에서 지급할 역할을 선택해주세요.\n"
+                                           "입력은 역할을 맨션하거나 역할 ID, 또는 역할 이름으로 할 수 있어요.\n"
+                                           f"레벨 {level} 역할 설정을 취소하고 싶으시다면 `취소` 라고 입력주세요.\n"
+                                           f"레벨 {level} 역할을 제거하고 싶으시면 `삭제` 라고 입력해주세요.\n"
+                                           f"현재 설정: {mention_role or '`(설정 안됨)`'}",
+                                   allowed_mentions=discord.AllowedMentions(roles=False))
+                    try:
+                        _msg = await self.bot.wait_for("message",
+                                                       check=lambda m: m.channel.id == ctx.channel.id and m.author.id == ctx.author.id,
+                                                       timeout=30)
+                        if _msg.content == "취소":
+                            await msg.edit(content=f"ℹ 레벨 {level} 리워드 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
+                            continue
+                        elif _msg.content == "삭제":
+                            if level in waiting:
+                                del waiting[level]
+                            wait_list["reward_roles"] = json.dumps(waiting)
+                            await msg.edit(content=f"✅ 레벨 {level} 리워드 역할이 성공적으로 삭제되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
+                            continue
+                        try:
+                            role = await commands.RoleConverter().convert(ctx, _msg.content)
+                            waiting[level] = role.id
+                            wait_list["reward_roles"] = json.dumps(waiting)
+                            await msg.edit(content=f"✅ 레벨 {level} 리워드 역할 설정이 성공적으로 저장되었어요. 다시 위에서 다른 설정을 선택해주세요.",
+                                           delete_after=5)
+                        except commands.CommandError:
+                            await msg.edit(content=f"❌ 존재하지 않는 역할이거나 잘못된 입력이에요. 레벨 {level} 리워드 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.",
+                                           delete_after=5)
+                    except asyncio.TimeoutError:
+                        await msg.edit(content=f"❌ 레벨 {level} 리워드 역할 설정이 취소되었어요. 다시 위에서 다른 설정을 선택해주세요.", delete_after=5)
 
                 elif sel == "exit":
                     break
