@@ -1,4 +1,5 @@
 # Laythe
+![](https://koreanbots.dev/api/widget/bots/votes/872349051620831292.svg) ![](https://koreanbots.dev/api/widget/bots/servers/872349051620831292.svg)  
 레이테, 다기능 관리봇.
 
 ## 직접 돌리기 (권장하지 않음)
