@@ -269,7 +269,17 @@ class Setting(commands.Cog, name="봇 설정"):
             return await ctx.reply("ℹ 변경된 설정이 없어요.")
         inject = ', '.join([f"{x}=%s" for x in wait_list.keys()])
         await self.bot.db.execute(f"""UPDATE settings SET {inject} WHERE guild_id=%s""", (*wait_list.values(), ctx.guild.id))
-        await ctx.reply("✅ 변경한 설정이 적용되었어요. 실제 적용까지는 최대 5분 정도 걸릴 수 있어요.")
+        try:
+            kbot_voted, ubot_voted = await self.bot.botlist.get_voted(ctx.author.id)
+        except:  # noqa
+            kbot_voted = True
+            ubot_voted = True
+        extra_string = "\n기다리시는 동안 레이테에게 투표를 해주시는건 어떤가요? 투표는 다음 링크에서 할 수 있어요."
+        if not kbot_voted:
+            extra_string += "\nhttps://koreanbots.dev/bots/872349051620831292/vote (해당 링크에서 투표하신 경우 12시간마다 투표 여부가 초기화돼요.)"
+        if not ubot_voted:
+            extra_string += "\nhttps://uniquebots.kr/bots/info/872349051620831292"
+        await ctx.reply(f"✅ 변경한 설정이 적용되었어요. 실제 적용까지는 최대 5분 정도 걸릴 수 있어요.{extra_string if not kbot_voted or not ubot_voted else ''}")
 
 
 def setup(bot):
