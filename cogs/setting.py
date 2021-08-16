@@ -65,6 +65,20 @@ class Setting(commands.Cog, name="봇 설정"):
     @laythe_setting.command(name="변경")
     async def laythe_setting_update(self, ctx: commands.Context):
         settings = (await self.bot.cache_manager.get_settings(ctx.guild.id))[0]
+        accepted = settings["accepted"]
+        if not accepted:
+            msg = await ctx.reply("레이테의 설정을 진행하기 전, 다음 이용 약관을 읽어주세요.\n"
+                                  "레이테의 관리 기능을 사용하면, 해당 서버의 ID와 일부 기능에 사용되는 채널 ID, 그리고 경고 부여 시 경고를"
+                                  "받은 유저의 ID를 수집합니다. 해당 내용에 동의하시지 않는 경우, 즉시 레이테 봇을 추방해주세요.\n"
+                                  "계속 진행하신다면 해당 내용에 동의한 것으로 간주합니다.\n"
+                                  "계속 진행할까요?")
+            conf = await self.bot.confirm(ctx.author, msg)
+            if not conf:
+                return await msg.reply("이용 약관에 거부하셨어요. 만약 사용을 원하신다면 언제든지 이 명령어를 재실행해서 동의하실 수 있어요.\n"
+                                       "그렇지 않다면, 바로 레이테 봇을 추방해주세요.")
+            await msg.delete()
+            await self.bot.db.execute("""UPDATE settings SET accepted=1 WHERE guild_id=%s""", (ctx.guild.id,))
+            await self.bot.cache_manager.update_single_guild_setup(ctx.guild.id)
         flags = to_setting_flags(settings["flags"])
         items = [manage_components.create_select_option(
             label="커스텀 프리픽스", value="custom_prefix"
