@@ -97,6 +97,19 @@ class Level(commands.Cog, name="레벨"):
         pager = Pager(self.bot, ctx.channel, ctx.author, pages, is_embed=True, reply=ctx.message)
         await pager.start_flatten()
 
+    @commands.command(name="레벨리셋", description="서버 전체 또는 선택한 유저의 레벨을 리셋해요.", usage="`{prefix}리더보드 (선택 유저:유저 ID 또는 맨션:서버 전체)`")
+    @commands.has_permissions(manage_messages=True)
+    async def reset_level(self, ctx: commands.Context, user: discord.User = None):
+        msg = await ctx.send("정말로 레벨 리셋을 진행할까요?")
+        conf = await self.bot.confirm(ctx.author, msg)
+        if not conf:
+            return await msg.edit(content="❌ 레벨 리셋을 취소했어요.")
+        if user:
+            await self.bot.db.execute("""DELETE FROM levels WHERE guild_id=%s AND user_id=%s""", (ctx.guild.id, user.id))
+        else:
+            await self.bot.db.execute("""DELETE FROM levels WHERE guild_id=%s""", (ctx.guild.id,))
+        await msg.edit(content="✅ 성공적으로 레벨을 리셋했어요.")
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or not isinstance(message.channel, discord.TextChannel) or "laythe:leveloff" in (message.channel.topic or ""):

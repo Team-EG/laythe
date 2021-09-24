@@ -12,6 +12,11 @@ class Setting(commands.Cog, name="봇 설정"):
     def __init__(self, bot: LaytheClient):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        await self.bot.db.execute("""DELETE FROM settings WHERE guild_id=%s""", (guild.id,))
+        await self.bot.db.execute("""DELETE FROM levels WHERE guild_id=%s""", (guild.id,))
+
     @commands.group(name="설정", description="이 서버에서의 레이테 설정을 보거나 수정할 수 있어요.")
     @commands.has_permissions(administrator=True)
     async def laythe_setting(self, ctx: commands.Context):

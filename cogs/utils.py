@@ -35,7 +35,7 @@ class Utils(commands.Cog, name="유틸리티"):
                             color=EmbedColor.NEGATIVE,
                             display_footer=True)
         embed.add_field(name="수정 전", value=orig, inline=False)
-        embed.add_field(name="수정 후", value=changed, inline=False)
+        embed.add_field(name="수정 후", value=changed or "`수정 결과를 표시할 수 없어요.`", inline=False)
         await ctx.reply(embed=embed)
 
     @commands.command(name="유저정보", description="유저의 정보를 알려줘요.", usage="`{prefix}유저정보 (유저:맨션 또는 ID:명령어를 사용한 유저)`")
@@ -75,7 +75,7 @@ class Utils(commands.Cog, name="유틸리티"):
         embed.set_image(url=ctx.guild.banner_url)
         await ctx.send(embed=embed)
 
-    @commands.command(name="정보", description="레이테의 정보를 알려줘요")
+    @commands.command(name="정보", description="레이테의 정보를 알려줘요.")
     async def laythe_info(self, ctx: commands.Context):
         guild_count = len(self.bot.guilds)
         user_count = len(list(self.bot.get_all_members()))
@@ -106,6 +106,15 @@ class Utils(commands.Cog, name="유틸리티"):
         github = manage_components.create_button(style=5, label="GitHub", emoji=github_emoji, url="https://github.com/Team-EG/laythe")
         row = manage_components.create_actionrow(team_eg, github)
         await ctx.reply(embed=embed, components=[row])
+
+    @commands.command(name="구독", description="Team EG 봇 공지 채널에 구독해요.", usage="`{prefix}구독 (채널:채널 ID 또는 맨션:현재 채널)`")
+    @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def sub_to_eg(self, ctx: commands.Context, channel: discord.TextChannel = None):
+        eg_channel: discord.TextChannel = self.bot.get_channel(697471259105034250)
+        channel = channel or ctx.channel
+        await eg_channel.follow(destination=channel)
+        await ctx.reply("✅ 성공적으로 Team EG 봇 공지 채널에 구독했어요.")
 
 
 def setup(bot):
