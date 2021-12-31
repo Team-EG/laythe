@@ -77,15 +77,18 @@ class LaytheClient(commands.AutoShardedBot):
     async def init_all_ext(self):
         await self.wait_until_ready()
         self.lavalink = lavalink.Client(self.user.id)
-        self.lavalink.add_node(host=self.get_setting("lavahost"),
-                               port=self.get_setting("lavaport"),
-                               password=self.get_setting("lavapw"),
-                               region="ko")
+        self.connect_node()
         self.add_listener(self.lavalink.voice_update_handler, "on_socket_response")
         await self.db.login()
         await self.cache_manager.update_cache()
         self.db_ready = True
         self.logger.info("DB and cache is all ready!")
+
+    def connect_node(self):
+        self.lavalink.add_node(host=self.get_setting("lavahost"),
+                               port=self.get_setting("lavaport"),
+                               password=self.get_setting("lavapw"),
+                               region="ko")
 
     async def confirm(self, author: discord.User, message: discord.Message, timeout=30):
         yes_button = manage_components.create_button(3, "네", "⭕", f"yes{message.id}")

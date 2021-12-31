@@ -66,7 +66,13 @@ class Music(commands.Cog, name="음악"):
         loading = "<a:loading:868755640909201448>"
         await ctx.message.add_reaction(loading)
         url = url if url.startswith("https://") or url.startswith("http://") else f"ytsearch:{url}"
-        lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(ctx.guild.id, region="ko")
+        try:
+            lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(ctx.guild.id, region="ko")
+        except lavalink.NodeException:
+            msg = await ctx.reply("ℹ 잠시만 기다려주세요, 음악 노드에 문제가 있어 재연결을 시도할께요...")
+            self.bot.connect_node()
+            await msg.delete()
+            lava: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(ctx.guild.id, region="ko")
         await self.bot.connect_to_voice(ctx.guild, ctx.author.voice) if not lava.is_connected else None
         resp = await lava.node.get_tracks(url)
         track = None

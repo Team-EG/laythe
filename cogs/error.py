@@ -24,7 +24,7 @@ class Error(commands.Cog):
             else await ctx.message.add_reaction("⚠")
         report_required = False
         if isinstance(error, commands.NotOwner):
-            base.title += "이 명령어는 Team EG 개발자만 사용할 수 있는 명령어에요."
+            base.title += "이 명령어는 CodeNU 개발자만 사용할 수 있는 명령어에요."
         elif isinstance(error, commands.CommandOnCooldown):
             base.title += "아직 쿨다운이 끝나지 않았어요."
             base.description = f"{parse_second(round(error.retry_after))}만 더 기다려주세요."
@@ -58,7 +58,7 @@ class Error(commands.Cog):
                 fname = f"traceback/{str(time.time()).split('.')[0]}.txt"
                 with open(fname, "w", encoding="UTF-8") as f:
                     f.write(debug_format)
-                await self.bot.get_channel(764359951266480189).send(f"새로운 오류가 저장되었습니다. (`{fname}`)")
+                await self.bot.get_channel(891520234920501268).send(f"새로운 오류가 저장되었습니다. (`{fname}`)")
                 await msg.reply("성공적으로 오류 메시지를 전송했어요!")
             else:
                 await msg.reply("전송을 취소했어요.")

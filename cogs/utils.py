@@ -86,7 +86,7 @@ class Utils(commands.Cog, name="유틸리티"):
         node = self.bot.lavalink.node_manager.nodes[0].stats
         embed = AuthorEmbed(ctx.author,
                             title="레이테 정보",
-                            description="Developed and maintained by [Team EG](https://discord.gg/gqJBhar).",
+                            description="Developed and maintained by [CodeNU](https://discord.gg/gqJBhar).",
                             color=EmbedColor.DEFAULT,
                             timestamp=ctx.message.created_at)
         embed.add_field(name="서버 수", value=f"`{guild_count}`개", inline=False)
@@ -107,14 +107,14 @@ class Utils(commands.Cog, name="유틸리티"):
         row = manage_components.create_actionrow(team_eg, github)
         await ctx.reply(embed=embed, components=[row])
 
-    @commands.command(name="구독", description="Team EG 봇 공지 채널에 구독해요.", usage="`{prefix}구독 (채널:채널 ID 또는 맨션:현재 채널)`")
+    @commands.command(name="구독", description="CodeNU 봇 공지 채널에 구독해요.", usage="`{prefix}구독 (채널:채널 ID 또는 맨션:현재 채널)`")
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     async def sub_to_eg(self, ctx: commands.Context, channel: discord.TextChannel = None):
         eg_channel: discord.TextChannel = self.bot.get_channel(697471259105034250)
         channel = channel or ctx.channel
         await eg_channel.follow(destination=channel)
-        await ctx.reply("✅ 성공적으로 Team EG 봇 공지 채널에 구독했어요.")
+        await ctx.reply("✅ 성공적으로 CodeNU 봇 공지 채널에 구독했어요.")
 
 
 def setup(bot):
