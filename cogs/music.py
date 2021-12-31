@@ -23,7 +23,7 @@ class Music(commands.Cog, name="음악"):
         if isinstance(event, lavalink.events.QueueEndEvent):
             guild: discord.Guild = self.bot.get_guild(int(event.player.guild_id))
             channel: discord.TextChannel = event.player.fetch("channel")
-            await channel.send(f"ℹ 대기열이 비어있고 모든 노래를 재생했어요. 음성 채널에서 나갈께요.")
+            await channel.send(f"ℹ 대기열이 비어있고 모든 노래를 재생했어요. 음성 채널에서 나갈게요.")
             await self.bot.connect_to_voice(guild)
             await self.bot.lavalink.player_manager.destroy(guild.id)
         if isinstance(event, lavalink.events.TrackStartEvent):
